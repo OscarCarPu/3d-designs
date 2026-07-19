@@ -14,9 +14,9 @@
 include <BOSL2/std.scad>
 
 // --- Que dibujar (1 = si, 0 = no) ---
-bandeja = 0;
+bandeja = 1;
 bote    = 0;
-tapa    = 1;
+tapa    = 0;
 
 $fn = 120;
 
@@ -43,9 +43,9 @@ holder_wall = 2.2;
 bote_clr    = 1.0;  // holgura del bote dentro del cajon
 cajon_wall  = 4;
 cajon_h     = 26;   // altura de las paredes del cajon
-lid_h       = 12;   // altura de la tapa
+disc_h      = 2.5;  // grosor de la cara plana perforada de la tapa
 lid_lip_h   = 6;    // profundidad del labio de encaje
-hole_d      = 3.5;  // diametro de los agujeros de la tapa
+hole_d      = 3.0;  // diametro de los agujeros de la tapa
 hole_n      = 6;
 
 // --- Geometria derivada ---
@@ -98,43 +98,43 @@ module cajon() {
 }
 
 // ============================================================================
-//  BOTE: vaso con fondo cerrado y boca abierta para la tapa.
+//  BOTE: vaso con fondo plano (chaflan anti-pata-de-elefante) y boca abierta.
+//  Se imprime tal cual: boca arriba, sin soportes.
 // ============================================================================
 module bote_cuerpo() {
-    h = holder_h - lid_h + lid_lip_h;
+    h = holder_h - disc_h;
     difference() {
-        cyl(d = holder_d, h = h, rounding1 = 2, anchor = BOTTOM);
+        cyl(d = holder_d, h = h, chamfer1 = 0.8, anchor = BOTTOM);
         up(holder_wall) cyl(d = holder_d - 2*holder_wall, h = h, anchor = BOTTOM);
+        // chaflan de entrada en la boca para guiar el labio de la tapa
+        up(h) cyl(d1 = holder_d - 2*holder_wall, d2 = holder_d - 2*holder_wall + 3,
+                  h = 1.5, anchor = TOP);
     }
 }
 
 // ============================================================================
-//  TAPA: labio a presion + cupula perforada.
+//  TAPA: cara plana perforada + labio a presion.
+//  MODELADA EN POSICION DE IMPRESION (cara plana sobre la cama, labio hacia
+//  arriba): agujeros = taladros verticales limpios, paredes rectas, sin
+//  soportes ni voladizos. En uso se coloca del reves sobre el bote.
 // ============================================================================
 module bote_tapa() {
-    lip_d     = holder_d - 2*holder_wall - 0.3;   // ajuste por friccion
-    dome_rise = 9;                                 // altura de la cupula
-    dome_sz   = dome_rise / (holder_d/2);
-    flange_h  = 2;                                 // reborde que apoya en la boca
+    lip_d = holder_d - 2*holder_wall - 0.4;   // ajuste por friccion
 
     difference() {
         union() {
-            // labio que encaja a presion dentro del bote
-            down(lid_lip_h)
-                tube(h = lid_lip_h + flange_h, od = lip_d, wall = holder_wall, anchor = BOTTOM);
-            // aro-reborde con centro abierto (por ahi pasa la sal/azucar)
-            tube(h = flange_h, od = holder_d, id = lip_d - 2*holder_wall, anchor = BOTTOM);
-            // cupula perforada de una sola capa
-            up(flange_h) difference() {
-                scale([1, 1, dome_sz]) sphere(d = holder_d);
-                scale([1, 1, dome_sz]) sphere(d = holder_d - 2*holder_wall);
-                down(holder_h) cube(holder_h*2, center = true);
-            }
+            // cara plana perforada (queda sobre la cama al imprimir)
+            cyl(d = holder_d, h = disc_h, chamfer1 = 0.8, anchor = BOTTOM);
+            // labio que encaja dentro del bote (hacia arriba al imprimir)
+            up(disc_h)
+                tube(h = lid_lip_h, od = lip_d, wall = holder_wall,
+                     chamfer2 = 1, anchor = BOTTOM);
         }
+        // agujeros verticales rectos a traves de la cara
         for (i = [0 : hole_n - 1])
             zrot(i*360/hole_n) right(holder_d/5)
-                cyl(d = hole_d, h = lid_h*3, center = true);
-        cyl(d = hole_d, h = lid_h*3, center = true);
+                cyl(d = hole_d, h = disc_h*3, center = true);
+        cyl(d = hole_d, h = disc_h*3, center = true);
     }
 }
 
