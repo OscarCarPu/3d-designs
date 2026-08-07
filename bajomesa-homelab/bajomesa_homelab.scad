@@ -19,7 +19,7 @@
 //      sola linea de tornillos, que es el modo de fallo real del
 //      aglomerado de 20 mm.
 //
-//      Orden de la fila:  M920q | fuente+conversor | router
+//      Orden de la fila:  M920q | conversor | router
 //      El M920q va en el extremo a proposito: es lo que mas vas a
 //      tocar y desde ahi sale sin desmontar nada mas.
 //
@@ -63,7 +63,7 @@ pieza = "conjunto";
 //  "cuna"      cuna de bloqueo           -> imprimir x4
 //  "galga"     galga de separacion       -> imprimir x2  (util de montaje)
 //  "m920q"     modulo del M920q          -> imprimir x1
-//  "fuente"    modulo fuente + conversor -> imprimir x1
+//  "aux"       modulo del conversor      -> imprimir x1
 //  "router"    modulo del router         -> imprimir x1
 //  "brida"     brida del ladron          -> imprimir x2
 
@@ -73,8 +73,12 @@ pieza = "conjunto";
 // Lenovo ThinkCentre M920q Tiny  (oficial: 179 x 183 x 37 con pies)
 pc_x = 179;  pc_y = 183;  pc_z = 37;
 
-// Fuente del M920q (slim tip 90 W).  <-- MIDE LA TUYA, es estimacion
-ps_x = 55;   ps_y = 125;  ps_z = 30;
+// La fuente va integrada en el equipo, no como ladrillo externo.
+// Si en algun momento pasa a ser externa, pon esto a true y el modulo
+// auxiliar recupera su cubiculo (la fila crece 58 mm y puede pasar a
+// necesitar 3 segmentos de rail por lado en vez de 2).
+fuente_externa = false;
+ps_x = 55;   ps_y = 125;  ps_z = 30;   // solo se usa si fuente_externa
 
 // Conversor fibra/ethernet  (el mismo del diseno anterior)
 c_x = 70;   c_y = 90;   c_z = 25;
@@ -82,20 +86,36 @@ c_x = 70;   c_y = 90;   c_z = 25;
 // Router  (el mismo del diseno anterior)
 r_x = 170;  r_y = 170;  r_z = 60;
 
-// Ladron / regleta.  <-- MIDE EL ALTO, es lo unico que no me dijiste
-la_x = 400;  la_y = 60;   la_z = 40;
+// Ladron / regleta
+la_x = 400;  la_y = 60;   la_z = 42;
 
 /* =====================================================================
    3. TORNILLOS  (los que ya usaste en el cajon-router)
    ===================================================================== */
-d_vastago   = 6;      // diametro de la cana
-d_cabeza    = 11;     // diametro de la cabeza   <-- VERIFICA CON CALIBRE
+//  d_cabeza es el diametro MAXIMO del sombrero del tornillo, medido
+//  atravesado por la parte mas ancha, la que apoya contra la madera:
+//
+//        |<-- d_cabeza -->|        <- mide AQUI, con el calibre
+//         \______________/            atravesado sobre el sombrero
+//              |    |
+//              |    |  <- d_vastago (la cana lisa, bajo la cabeza)
+//              |####|
+//              |####|  <- la rosca (no importa para el diseno)
+//
+//  Si tu cabeza pasa de 13 mm no cabe por la bocallave: sube
+//  d_cabeza y el circulo crece solo.
+d_vastago   = 6;
+d_cabeza    = 11;     // <-- VERIFICA CON CALIBRE
 hol_vastago = 1.5;
 hol_cabeza  = 2.0;
 desliz      = 16;     // recorrido de la bocallave
 
 // Cuanto hay que dejar SIN ROSCAR el tornillo en el tablero: la pieza
 // se cuelga en ese hueco. Es LA cota critica del montaje.
+//
+// Tablero de 20 mm: usa tornillos de 20 mm de largo TOTAL o menos.
+// Con 3.5 fuera quedan 16.5 dentro, que agarra de sobra y no asoma
+// por la cara de arriba.
 saliente_tornillo = 3.5;
 
 /* =====================================================================
@@ -152,9 +172,10 @@ TABLERO = RAIL_Z0 + RH;                     // cara inferior del tablero
 
 // Anchos de cada modulo (eje X)
 W_m920q  = pc_x + 2*4       + 2*pared;              // 193
-W_fuente = ps_x + c_x + 2*2 + 3 + 2*pared;          // 138
+W_aux    = fuente_externa ? ps_x + c_x + 2*2 + 3 + 2*pared   // 138
+                          : c_x + 2*2 + 2*pared;             //  80
 W_router = r_x  + 2*hol_dev + 2*pared;              // 186
-W_TOTAL  = W_m920q + W_fuente + W_router;
+W_TOTAL  = W_m920q + W_aux + W_router;
 
 // Railes: se trocean en el minimo numero de segmentos imprimibles
 L_RAIL = W_TOTAL + 12;
@@ -270,7 +291,7 @@ module testigo() {
         translate([0.5, -R_ch_w/2, R_lip]) cube([60, R_ch_w, R_ch_h + R_plate]);
         translate([-0.1, -R_open/2, -0.1]) cube([61, R_open, R_lip + 0.2]);
     }
-    translate([32.5, RW + 12, -Z_MURO]) {
+    translate([32.5, RW + 12, -Z_MURO + 6]) {
         translate([-30, -M_wall/2, Z_MURO - 6]) cube([60, M_wall, 6]);
         cabeza_T(60);
     }
@@ -361,38 +382,44 @@ module mod_m920q() {
     }
 }
 
-// --- MODULO FUENTE + CONVERSOR ---------------------------------------
-//  Dos cubiculos LADO A LADO en X (en Y no caben: 125 + 90 > 194).
-//  La fuente calienta bastante, asi que va calada por los dos lados.
-x_ps  = pared;                    // cubiculo de la fuente
-x_tab = x_ps + ps_x + 2;          // tabique separador
-x_cv  = x_tab + 3;                // cubiculo del conversor
+// --- MODULO AUXILIAR: CONVERSOR (+ fuente si fuese externa) -----------
+//  Con la fuente integrada en el equipo este modulo solo lleva el
+//  conversor y baja de 138 a 80 mm, lo que deja la fila en 459 mm y
+//  permite hacer cada rail con DOS segmentos en vez de tres: cuatro
+//  tornillos menos.
+//  Si algun dia la fuente pasa a ser externa, los dos cubiculos van
+//  LADO A LADO en X (en Y no caben: 125 + 90 > 194).
+x_ps  = pared;                            // cubiculo de la fuente
+x_cv  = fuente_externa ? x_ps + ps_x + 5 : pared;   // cubiculo del conversor
 
-module mod_fuente() {
-    h_dev = max(ps_z, c_z);
+module mod_aux() {
+    h_dev = fuente_externa ? max(ps_z, c_z) : c_z;
     y_ps  = (RAIL_SEP - ps_y) / 2;
     y_cv  = (RAIL_SEP - c_y)  / 2;
     difference() {
         union() {
-            chasis(W_fuente, suelo + h_dev + 6);
-            // tabique central
-            translate([x_tab, M_wall/2, suelo])
-                cube([3, RAIL_SEP - M_wall, h_dev]);
-            // topes en Y de cada cubiculo
-            translate([x_ps, M_wall/2, suelo])
-                cube([ps_x + 2, y_ps - M_wall/2, h_dev]);
-            translate([x_ps, RAIL_SEP - y_ps, suelo])
-                cube([ps_x + 2, y_ps - M_wall/2, h_dev]);
+            chasis(W_aux, suelo + h_dev + 6);
+            if (fuente_externa) {
+                // tabique central y topes del cubiculo de la fuente
+                translate([x_ps + ps_x + 2, M_wall/2, suelo])
+                    cube([3, RAIL_SEP - M_wall, h_dev]);
+                translate([x_ps, M_wall/2, suelo])
+                    cube([ps_x + 2, y_ps - M_wall/2, h_dev]);
+                translate([x_ps, RAIL_SEP - y_ps, suelo])
+                    cube([ps_x + 2, y_ps - M_wall/2, h_dev]);
+            }
             translate([x_cv, M_wall/2, suelo])
                 cube([c_x + 2, y_cv - M_wall/2, h_dev]);
             translate([x_cv, RAIL_SEP - y_cv, suelo])
                 cube([c_x + 2, y_cv - M_wall/2, h_dev]);
         }
-        ventana(W_fuente, 0,        suelo + 6, Z_MURO - 4);
-        ventana(W_fuente, RAIL_SEP, suelo + 6, Z_MURO - 4);
-        rejilla_lateral(W_fuente, 0, h_dev - 6);
-        for (x = [x_ps + ps_x/2, x_cv + c_x/2])
-            translate([x, RAIL_SEP/2, suelo + 5])
+        ventana(W_aux, 0,        suelo + 6, Z_MURO - 4);
+        ventana(W_aux, RAIL_SEP, suelo + 6, Z_MURO - 4);
+        rejilla_lateral(W_aux, 0, h_dev - 6);
+        translate([x_cv + c_x/2, RAIL_SEP/2, suelo + 5])
+            rotate([0, 90, 0]) ranura_brida();
+        if (fuente_externa)
+            translate([x_ps + ps_x/2, RAIL_SEP/2, suelo + 5])
                 rotate([0, 90, 0]) ranura_brida();
     }
 }
@@ -478,8 +505,8 @@ module brida_ladron() {
    11. VISTA DE CONJUNTO
    ===================================================================== */
 X_M920Q  = 0;
-X_FUENTE = W_m920q;
-X_ROUTER = W_m920q + W_fuente;
+X_AUX    = W_m920q;
+X_ROUTER = W_m920q + W_aux;
 
 module fantasma(x, y, z, dx, dy, dz, col) {
     color(col, 0.45) translate([x, y, z]) cube([dx, dy, dz]);
@@ -491,7 +518,7 @@ module conjunto() {
             translate([-6 + s*R_seg, y, RAIL_Z0]) rail_seg();
 
     translate([X_M920Q,  0, 0]) mod_m920q();
-    translate([X_FUENTE, 0, 0]) mod_fuente();
+    translate([X_AUX,    0, 0]) mod_aux();
     translate([X_ROUTER, 0, 0]) mod_router();
 
     for (x = [W_TOTAL/2 - 130, W_TOTAL/2 + 130])
@@ -500,9 +527,10 @@ module conjunto() {
     // aparatos (fantasma)
     fantasma(X_M920Q + pared + 4, (RAIL_SEP - pc_y)/2, suelo,
              pc_x, pc_y, pc_z, "DarkRed");
-    fantasma(X_FUENTE + x_ps + 1, (RAIL_SEP - ps_y)/2, suelo,
-             ps_x, ps_y, ps_z, "DimGray");
-    fantasma(X_FUENTE + x_cv + 1, (RAIL_SEP - c_y)/2, suelo,
+    if (fuente_externa)
+        fantasma(X_AUX + x_ps + 1, (RAIL_SEP - ps_y)/2, suelo,
+                 ps_x, ps_y, ps_z, "DimGray");
+    fantasma(X_AUX + x_cv + 1, (RAIL_SEP - c_y)/2, suelo,
              c_x, c_y, c_z, "DarkGreen");
     fantasma(X_ROUTER + pared + hol_dev, (RAIL_SEP - r_y)/2, suelo,
              r_x, r_y, r_z, "SteelBlue");
@@ -523,7 +551,7 @@ else if (pieza == "cuna")     cuna();
 else if (pieza == "testigo")  testigo();
 else if (pieza == "galga")    translate([0, 0, -Z_MURO + 12]) galga();
 else if (pieza == "m920q")    mod_m920q();
-else if (pieza == "fuente")   mod_fuente();
+else if (pieza == "aux")      mod_aux();
 else if (pieza == "router")   mod_router();
 // La brida sale girada: se imprime con la placa contra la cama, que es
 // la cara ancha, y el cuenco creciendo hacia arriba.
