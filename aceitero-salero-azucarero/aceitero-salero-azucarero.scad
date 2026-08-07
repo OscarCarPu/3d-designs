@@ -44,9 +44,33 @@ bote_clr    = 1.0;  // holgura del bote dentro del cajon
 cajon_wall  = 4;
 cajon_h     = 26;   // altura de las paredes del cajon
 disc_h      = 2.5;  // grosor de la cara plana perforada de la tapa
-lid_lip_h   = 6;    // profundidad del labio de encaje
+lid_lip_h   = 7;    // profundidad del labio de encaje
 hole_d      = 3.0;  // diametro de los agujeros de la tapa
 hole_n      = 6;
+
+// --- Cierre a presion de la tapa (aro de retencion) ---
+// La tapa ya no solo hace friccion: el bote lleva un aro interior que
+// estrecha el hueco un poco antes del fondo del labio. La tapa tiene que
+// forzar un poco para pasarlo y queda "mordida" en vez de solo apoyada,
+// asi no se sale sola al agitar el bote para servir sal/azucar.
+lip_clr       = 0.3; // holgura diametral del labio en el tramo recto
+snap_bite     = 0.3; // mordida radial del aro de bloqueo sobre el labio
+snap_band     = 1.4; // altura total del aro (rampa de entrada + salida)
+snap_from_rim = 4;   // profundidad del aro bajo el borde del bote
+// El aro de bloqueo vive en el BOTE (ya impreso, no se toca). Para que la
+// tapa entre/salga con poca fuerza sin perder el tope, se le talla un
+// rebaje al labio justo donde coincide el aro: la mordida efectiva pasa
+// a ser (snap_bite - lip_relief). Si sigue dura, sube lip_relief (sin
+// llegar a snap_bite, o el cierre deja de retener); si se cae sola, bajalo.
+// Solo hace falta reimprimir la tapa para ajustar esto.
+lip_relief    = 0.26;
+
+// --- Pestaña para sacar la tapa con los dedos ---
+tab_out     = 8;   // cuanto sobresale del borde del disco
+tab_overlap = 3;   // cuanto se mete dentro del disco (para que quede bien pegada)
+tab_w       = 12;  // ancho de la pestaña
+tab_h       = disc_h; // mismo grosor que el disco: plana, no invade la zona de cierre
+tab_round   = 3;   // redondeo de las esquinas
 
 // --- Geometria derivada ---
 socket_id  = oil_d + 2*oil_clr;
@@ -55,6 +79,9 @@ oil_zone_d = oil_d + 2*oil_margin;            // diametro exterior del foso
 pocket_d   = holder_d + 2*bote_clr;           // hueco redondo del cajon
 cajon_side = pocket_d + 2*cajon_wall;         // lado exterior del cajon
 cajon_x    = oil_zone_d/2 + cajon_side/2 + cajon_gap; // cajones fuera del foso
+bore_id    = holder_d - 2*holder_wall;        // hueco recto del bote
+lip_d      = bore_id - lip_clr;               // diametro recto del labio de la tapa
+neck_id    = lip_d - 2*snap_bite;             // diametro del aro de bloqueo
 
 // ============================================================================
 //  BANDEJA: base solida + foso del aceite + dos cajones (todo una pieza).
@@ -105,22 +132,31 @@ module bote_cuerpo() {
     h = holder_h - disc_h;
     difference() {
         cyl(d = holder_d, h = h, chamfer1 = 0.8, anchor = BOTTOM);
-        up(holder_wall) cyl(d = holder_d - 2*holder_wall, h = h, anchor = BOTTOM);
+        up(holder_wall) cyl(d = bore_id, h = h, anchor = BOTTOM);
         // chaflan de entrada en la boca para guiar el labio de la tapa
-        up(h) cyl(d1 = holder_d - 2*holder_wall, d2 = holder_d - 2*holder_wall + 3,
-                  h = 1.5, anchor = TOP);
+        up(h) cyl(d1 = bore_id, d2 = bore_id + 3, h = 1.5, anchor = TOP);
     }
+    // aro de bloqueo: nervio interior que estrecha el hueco justo antes de
+    // que el labio llegue al fondo de su recorrido (ver bote_tapa).
+    up(h - snap_from_rim - snap_band/2)
+        snap_ring(bore_id, neck_id, snap_band);
+}
+
+// Aro con perfil triangular (rampa-pico-rampa) revolucionado: se imprime
+// como un simple estrechamiento progresivo de la pared, sin voladizos.
+module snap_ring(d_out, d_in, band) {
+    rotate_extrude()
+        polygon([[d_out/2, 0], [d_in/2, band/2], [d_out/2, band]]);
 }
 
 // ============================================================================
-//  TAPA: cara plana perforada + labio a presion.
+//  TAPA: cara plana perforada + labio con cierre a presion (encaja en el aro
+//  de bloqueo de bote_cuerpo, no es solo friccion: hace "clic" y se queda).
 //  MODELADA EN POSICION DE IMPRESION (cara plana sobre la cama, labio hacia
 //  arriba): agujeros = taladros verticales limpios, paredes rectas, sin
 //  soportes ni voladizos. En uso se coloca del reves sobre el bote.
 // ============================================================================
 module bote_tapa() {
-    lip_d = holder_d - 2*holder_wall - 0.4;   // ajuste por friccion
-
     difference() {
         union() {
             // cara plana perforada (queda sobre la cama al imprimir)
@@ -129,12 +165,21 @@ module bote_tapa() {
             up(disc_h)
                 tube(h = lid_lip_h, od = lip_d, wall = holder_wall,
                      chamfer2 = 1, anchor = BOTTOM);
+            // pestaña que sobresale del borde para hacer palanca con los
+            // dedos y sacar la tapa sin tener que arañar el canto
+            right(holder_d/2 + (tab_out - tab_overlap)/2)
+                cuboid([tab_out + tab_overlap, tab_w, tab_h],
+                       rounding = tab_round, edges = "Z", anchor = BOTTOM);
         }
         // agujeros verticales rectos a traves de la cara
         for (i = [0 : hole_n - 1])
             zrot(i*360/hole_n) right(holder_d/5)
                 cyl(d = hole_d, h = disc_h*3, center = true);
         cyl(d = hole_d, h = disc_h*3, center = true);
+        // rebaje que alivia la mordida del aro de bloqueo del bote (ver
+        // lip_relief mas arriba): mismo alto y posicion que ese aro.
+        up(disc_h + snap_from_rim - snap_band/2)
+            snap_ring(lip_d, lip_d - 2*lip_relief, snap_band);
     }
 }
 
