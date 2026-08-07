@@ -30,8 +30,13 @@ problema.
 sin tocar el sistema de raíles. Si compartiese canal chocaría con las cabezas en T
 de los módulos, que ocupan casi toda su longitud.
 
-**Nada de PLA.** Carga permanente más el calor del M920q: acabaría descolgándose
-por fluencia. PETG o ASA.
+**PLA vale.** Lo desaconsejé al principio por fluencia bajo carga permanente,
+pero al echar los números no se sostiene: la tensión máxima está en las bocallaves
+del raíl, unos 5 N sobre ~40 mm² = **0,13 MPa**, y en las cabezas en T baja a
+0,003 MPa. Son tres o cuatro órdenes de magnitud por debajo del límite del PLA, y
+la fluencia a esas tensiones es despreciable. Lo único a vigilar sería la
+temperatura junto al M920q, y ahí hay 47 mm de aire libre y rejilla en los cuatro
+costados. PETG sigue siendo mejor si lo tienes, pero no hace falta comprarlo.
 
 ## Antes de imprimir: confirma esto
 
@@ -54,24 +59,48 @@ Con 3,5 mm fuera quedan 16,5 dentro, que agarra de sobra y no asoma por arriba.
 
 ## Orden de impresión
 
-Primero **`testigo`** (10 minutos). Es un trozo de raíl y un trozo de cabeza en T.
-Tienen que deslizar con la mano, firmes pero sin traqueteo. Si va duro sube `hol`,
-si baila bájalo — 0,05 mm cambia mucho. **No imprimas nada más hasta que eso ajuste.**
+Ordenado por riesgo: cada tanda valida algo antes de comprometer la siguiente.
 
-Luego:
+**Antes de nada:** confirma si el M920q lleva fuente interna o ladrillo externo.
+Si es externa hay que poner `fuente_externa = true`, y eso cambia la longitud de
+los segmentos de raíl (235 → 176 mm). Equivocarse aquí obliga a reimprimir los
+cuatro raíles.
 
-| Pieza | Cant. | Notas |
-|---|---|---|
-| `rail` | 4 | 2 por raíl, 241 mm cada uno (justo en tu cama) |
-| `galga` | 2 | útil de montaje, no queda puesto |
-| `m920q` | 1 | eje Y del modelo (229 mm) sobre el eje de 250 de tu cama |
-| `aux` | 1 | ídem |
-| `router` | 1 | ídem |
-| `cuna` | 4 | bloqueo por fricción |
-| `brida` | 2 | ladrón |
+| # | Piezas | Peso | Qué valida |
+|---|---|---|---|
+| 1 | `testigo` + 1 `cuna` | 45 g | El ajuste del canal. Debe deslizar firme y sin traqueteo. Si va duro sube `hol`, si baila bájalo: 0,05 mm cambia el tacto por completo. **No sigas hasta que ajuste.** |
+| 2 | 1 `rail` | 92 g | La bocallave contra tu tornillo real, los 241 mm en la cama y el puente de 30 mm de la placa |
+| 3 | 3 `rail` + 2 `galga` | 370 g | **Y aquí monta los raíles en la mesa.** Confirma que el bastidor de la elevable no estorba y que la posición es la buena, antes de meter ~30 h en los módulos |
+| 4 | `aux`, `m920q`, `router` | 874 g | En ese orden: `aux` es el más pequeño y valida la geometría de módulo barato |
+| 5 | 2 `brida` + 3 `cuna` | 191 g | El ladrón, que va desacoplado y es lo de menos riesgo |
 
-Todo sin soportes. Los raíles llevan un puente de 30 mm en la placa superior:
-sale limpio en cualquier impresora.
+Todo sin soportes y sin reorientar nada.
+
+**Por placa:** los módulos van de uno en uno (229 mm sobre el eje de 250 de la
+cama, 193 sobre el de 220). Los raíles entran de dos en dos.
+
+## Filamento
+
+**~1,6 kg**, así que **dos bobinas**. Desglose:
+
+| Pieza | ud | g/ud | total |
+|---|---|---|---|
+| `rail` | 4 | 92 | 368 g |
+| `router` | 1 | 373 | 373 g |
+| `m920q` | 1 | 329 | 329 g |
+| `brida` | 2 | 78 | 156 g |
+| `aux` | 1 | 172 | 172 g |
+| `galga` | 2 | 47 | 94 g |
+| `cuna` | 4 | 12 | 46 g |
+| `testigo` | 1 | 33 | 33 g |
+| | | | **1571 g** |
+
+De esos, 127 g son útiles de montaje (`testigo` y `galga`) que se tiran después.
+
+Calculado sobre el volumen de malla por densidad del PLA, con un 0,9 por las zonas
+gruesas. No está cortado con slicer, pero el margen de error es pequeño: casi toda
+la pieza son paredes de 3 a 6 mm y con 6 perímetros eso sale macizo pase lo que
+pase con el relleno. Cuenta con 1,5–1,8 kg.
 
 ## Montaje
 

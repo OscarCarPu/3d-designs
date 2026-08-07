@@ -299,10 +299,16 @@ module testigo() {
 
 // Galga: mantiene los dos railes a la separacion exacta mientras
 // marcas y taladras. No queda en el montaje final.
-module galga() {
-    translate([0, Y0, Z_MURO - 12]) cube([40, Y1 - Y0, 12]);
-    translate([20, 0, 0])        cabeza_T(40);
-    translate([20, RAIL_SEP, 0]) cabeza_T(40);
+//  Trabaja a traccion/compresion pura (solo separa), no a flexion, asi
+//  que se puede vaciar sin miedo: es un util de un solo uso.
+module galga(A = 26) {
+    difference() {
+        translate([0, Y0, Z_MURO - 8]) cube([A, Y1 - Y0, 8]);
+        translate([(A - 14)/2, Y0 + 22, Z_MURO - 9])
+            cube([14, (Y1 - Y0) - 44, 10]);
+    }
+    translate([A/2, 0, 0])        cabeza_T(A);
+    translate([A/2, RAIL_SEP, 0]) cabeza_T(A);
 }
 
 /* =====================================================================
@@ -339,12 +345,27 @@ module ventana(W, y, z0, z1) {
 }
 
 // Topes que centran el aparato en Y contra las paredes colgantes.
+// Van aligerados con ventanas dejando 3 mm de piel en la cara que toca
+// el aparato: son separadores, no estructura. Macizos se comian 200 g.
+module tope(W, y0, d, alto, piel_al_fondo) {
+    difference() {
+        translate([pared, y0, suelo]) cube([W - 2*pared, d, alto]);
+        if (d >= 6)
+            for (i = [0 : floor((W - 2*pared - 12) / 26)])
+                translate([pared + 6 + i*26,
+                           piel_al_fondo ? y0 - 1 : y0 + 3,
+                           suelo - 1])
+                    cube([16, d - 2, alto + 2]);
+    }
+}
+
 module topes(W, dev_y, alto) {
     g = (RAIL_SEP - dev_y) / 2;
-    translate([pared, M_wall/2, suelo])
-        cube([W - 2*pared, g - M_wall/2, alto]);
-    translate([pared, RAIL_SEP - g, suelo])
-        cube([W - 2*pared, g - M_wall/2, alto]);
+    d = g - M_wall/2;
+    if (d > 0.5) {
+        tope(W, M_wall/2,     d, alto, true);
+        tope(W, RAIL_SEP - g, d, alto, false);
+    }
 }
 
 // Rejilla en los dos laterales, a la altura del aparato.
@@ -392,31 +413,38 @@ module mod_m920q() {
 x_ps  = pared;                            // cubiculo de la fuente
 x_cv  = fuente_externa ? x_ps + ps_x + 5 : pared;   // cubiculo del conversor
 
+//  El conversor solo ocupa 90 de los 194 mm del vano. En vez de
+//  rellenar el resto con topes, va PEGADO A LA PARED TRASERA y los
+//  104 mm que sobran quedan como camara abierta para el bucle de
+//  servicio de la fibra, que en una mesa elevable hay que alojar en
+//  algun sitio. Sale mas ligero y ademas resuelve un problema real.
+y_cv_fin = M_wall/2 + c_y + 2;         // pared de retencion del conversor
+
 module mod_aux() {
     h_dev = fuente_externa ? max(ps_z, c_z) : c_z;
     y_ps  = (RAIL_SEP - ps_y) / 2;
-    y_cv  = (RAIL_SEP - c_y)  / 2;
     difference() {
         union() {
             chasis(W_aux, suelo + h_dev + 6);
             if (fuente_externa) {
-                // tabique central y topes del cubiculo de la fuente
                 translate([x_ps + ps_x + 2, M_wall/2, suelo])
                     cube([3, RAIL_SEP - M_wall, h_dev]);
-                translate([x_ps, M_wall/2, suelo])
-                    cube([ps_x + 2, y_ps - M_wall/2, h_dev]);
-                translate([x_ps, RAIL_SEP - y_ps, suelo])
-                    cube([ps_x + 2, y_ps - M_wall/2, h_dev]);
+                tope(ps_x + 2*pared, M_wall/2,        y_ps - M_wall/2, h_dev, true);
+                tope(ps_x + 2*pared, RAIL_SEP - y_ps, y_ps - M_wall/2, h_dev, false);
             }
-            translate([x_cv, M_wall/2, suelo])
-                cube([c_x + 2, y_cv - M_wall/2, h_dev]);
-            translate([x_cv, RAIL_SEP - y_cv, suelo])
-                cube([c_x + 2, y_cv - M_wall/2, h_dev]);
+            // pared de retencion del conversor + escuadras a 45
+            translate([pared, y_cv_fin, suelo])
+                cube([W_aux - 2*pared, 3, h_dev]);
+            for (x = [pared + 6, W_aux/2 - 4, W_aux - pared - 14])
+                hull() {
+                    translate([x, y_cv_fin + 3, suelo]) cube([8, 0.01, h_dev]);
+                    translate([x, y_cv_fin + 15, suelo]) cube([8, 0.01, 3]);
+                }
         }
         ventana(W_aux, 0,        suelo + 6, Z_MURO - 4);
         ventana(W_aux, RAIL_SEP, suelo + 6, Z_MURO - 4);
         rejilla_lateral(W_aux, 0, h_dev - 6);
-        translate([x_cv + c_x/2, RAIL_SEP/2, suelo + 5])
+        translate([x_cv + c_x/2, M_wall/2 + c_y/2, suelo + 5])
             rotate([0, 90, 0]) ranura_brida();
         if (fuente_externa)
             translate([x_ps + ps_x/2, RAIL_SEP/2, suelo + 5])
