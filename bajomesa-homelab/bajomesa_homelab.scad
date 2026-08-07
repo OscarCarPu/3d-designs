@@ -29,12 +29,9 @@
 //      modulos. Van desacopladas a proposito.
 //
 //  ---------------------------------------------------------------
-//  TORNILLOS: 12 para los railes + 4 para el ladron = 16.
-//  Son 16 taladros ciegos en una cara que no se ve. Si quieres
-//  empezar con menos, pon N_SEG=2 (railes mas largos, no caben en tu
-//  cama sin trocear) o deja una oreja de cada dos sin tornillo y
-//  anadela si notas cedimiento. La densidad de tornillos es lo que
-//  compra margen en aglomerado.
+//  TORNILLOS: 8 para los railes + 4 para el ladron = 12.
+//  Son 12 taladros ciegos en una cara que no se ve. El numero sale
+//  solo de N_SEG, que se calcula a partir del ancho de la fila.
 //
 //  ---------------------------------------------------------------
 //  TODO IMPRIME SIN SOPORTES.  Cama necesaria: 250 x 220.
@@ -44,8 +41,11 @@
 //               a lo largo del de 220.
 //    - BRIDAS, CUNA y GALGA: tal cual.
 //
-//  MATERIAL: PETG o ASA.  PLA NO: bajo carga permanente y con el
-//  calor del M920q terminaria descolgandose por fluencia (creep).
+//  MATERIAL: PLA vale. La tension maxima esta en las bocallaves del
+//  rail, ~5 N sobre unos 40 mm2 = 0.13 MPa, y en las cabezas en T baja
+//  a 0.003 MPa: tres ordenes de magnitud por debajo del limite del
+//  PLA, asi que la fluencia bajo carga permanente no es un problema
+//  real. PETG o ASA siguen siendo mejores si los tienes a mano.
 //
 //  Unidades: milimetros. Necesita la libreria BOSL2.
 // =====================================================================
@@ -58,8 +58,9 @@ $fn = 48;
    ===================================================================== */
 pieza = "conjunto";
 //  "conjunto"  vista de montaje completa (NO imprimible)
-//  "testigo"   probeta de ajuste del canal -> IMPRIME ESTO PRIMERO
-//  "rail"      1 segmento de rail        -> imprimir x6  (3 por rail)
+//  "testigo-rail"   \_ probeta de ajuste del canal, DOS piezas
+//  "testigo-cabeza" /  IMPRIME ESTO PRIMERO
+//  "rail"      1 segmento de rail        -> imprimir x4  (2 por rail)
 //  "cuna"      cuna de bloqueo           -> imprimir x4
 //  "galga"     galga de separacion       -> imprimir x2  (util de montaje)
 //  "m920q"     modulo del M920q          -> imprimir x1
@@ -234,17 +235,23 @@ module bocallave_cut() {
 // Orejas alternadas: impiden que el rail gire sobre su propio eje.
 function orejas() = [[42, +1], [R_seg - 42, -1]];
 
+// Seccion del rail. La usan el segmento real y la probeta, para que la
+// probeta no pueda quedarse desincronizada del perfil que va a la mesa.
+module perfil_rail(L) {
+    // labios
+    translate([0,  R_open/2, 0]) cube([L, (RW - R_open)/2, R_lip]);
+    translate([0, -RW/2,     0]) cube([L, (RW - R_open)/2, R_lip]);
+    // paredes laterales
+    translate([0,  R_ch_w/2, R_lip]) cube([L, R_wall, R_ch_h]);
+    translate([0, -RW/2,     R_lip]) cube([L, R_wall, R_ch_h]);
+    // placa superior (puente de 30 mm sobre el canal)
+    translate([0, -RW/2, R_lip + R_ch_h]) cube([L, RW, R_plate]);
+}
+
 module rail_seg(L = R_seg) {
     difference() {
         union() {
-            // labios
-            translate([0,  R_open/2, 0]) cube([L, (RW - R_open)/2, R_lip]);
-            translate([0, -RW/2,     0]) cube([L, (RW - R_open)/2, R_lip]);
-            // paredes laterales
-            translate([0,  R_ch_w/2, R_lip]) cube([L, R_wall, R_ch_h]);
-            translate([0, -RW/2,     R_lip]) cube([L, R_wall, R_ch_h]);
-            // placa superior (puente de 30 mm sobre el canal)
-            translate([0, -RW/2, R_lip + R_ch_h]) cube([L, RW, R_plate]);
+            perfil_rail(L);
             // orejas de las bocallaves
             for (o = orejas())
                 translate([o[0] - R_ear_l/2,
@@ -281,19 +288,19 @@ module cuna(L = 45) {
 }
 
 // TESTIGO: 60 mm de rail + 60 mm de cabeza. IMPRIME ESTO PRIMERO.
+// Son dos piezas independientes, una en cada STL.
 // Cuestan 10 minutos y te dicen si el ajuste del canal es el correcto
 // ANTES de tirarte 20 horas de impresora en los seis segmentos.
 // Debe deslizar con la mano, sin holgura de traqueteo. Si va duro,
 // sube "hol"; si baila, bajalo. 0.05 mm cambia mucho.
-module testigo() {
-    difference() {
-        translate([0, -RW/2, 0]) cube([60, RW, RH]);
-        translate([0.5, -R_ch_w/2, R_lip]) cube([60, R_ch_w, R_ch_h + R_plate]);
-        translate([-0.1, -R_open/2, -0.1]) cube([61, R_open, R_lip + 0.2]);
-    }
-    translate([32.5, RW + 12, -Z_MURO + 6]) {
-        translate([-30, -M_wall/2, Z_MURO - 6]) cube([60, M_wall, 6]);
-        cabeza_T(60);
+// Son DOS piezas sueltas, cada una en su STL: el canal abierto por los
+// dos extremos para poder probar el deslizamiento en ambos sentidos.
+module testigo_rail(L = 60) { perfil_rail(L); }
+
+module testigo_cabeza(L = 60) {
+    translate([0, 0, -Z_MURO + 6]) {
+        translate([-L/2, -M_wall/2, Z_MURO - 6]) cube([L, M_wall, 6]);
+        cabeza_T(L);
     }
 }
 
@@ -576,8 +583,9 @@ module conjunto() {
 if      (pieza == "conjunto") conjunto();
 else if (pieza == "rail")     rail_seg();
 else if (pieza == "cuna")     cuna();
-else if (pieza == "testigo")  testigo();
-else if (pieza == "galga")    translate([0, 0, -Z_MURO + 12]) galga();
+else if (pieza == "testigo-rail")   testigo_rail();
+else if (pieza == "testigo-cabeza") testigo_cabeza();
+else if (pieza == "galga")    translate([0, 0, -Z_MURO + 8]) galga();
 else if (pieza == "m920q")    mod_m920q();
 else if (pieza == "aux")      mod_aux();
 else if (pieza == "router")   mod_router();

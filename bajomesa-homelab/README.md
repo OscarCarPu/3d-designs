@@ -68,11 +68,11 @@ cuatro raíles.
 
 | # | Piezas | Peso | Qué valida |
 |---|---|---|---|
-| 1 | `testigo` + 1 `cuna` | 45 g | El ajuste del canal. Debe deslizar firme y sin traqueteo. Si va duro sube `hol`, si baila bájalo: 0,05 mm cambia el tacto por completo. **No sigas hasta que ajuste.** |
-| 2 | 1 `rail` | 92 g | La bocallave contra tu tornillo real, los 241 mm en la cama y el puente de 30 mm de la placa |
-| 3 | 3 `rail` + 2 `galga` | 370 g | **Y aquí monta los raíles en la mesa.** Confirma que el bastidor de la elevable no estorba y que la posición es la buena, antes de meter ~30 h en los módulos |
-| 4 | `aux`, `m920q`, `router` | 874 g | En ese orden: `aux` es el más pequeño y valida la geometría de módulo barato |
-| 5 | 2 `brida` + 3 `cuna` | 191 g | El ladrón, que va desacoplado y es lo de menos riesgo |
+| 1 | `testigo-rail` + `testigo-cabeza` + 1 `cuna` | 50 g | El ajuste del canal. Debe deslizar firme y sin traqueteo. Si va duro sube `hol`, si baila bájalo: 0,05 mm cambia el tacto por completo. **No sigas hasta que ajuste.** |
+| 2 | 1 `rail` | 90 g | La bocallave contra tu tornillo real, los 241 mm en la cama y el puente de 30 mm de la placa |
+| 3 | 3 `rail` + 2 `galga` | 361 g | **Y aquí monta los raíles en la mesa.** Confirma que el bastidor de la elevable no estorba y que la posición es la buena, antes de meter ~30 h en los módulos |
+| 4 | `aux`, `m920q`, `router` | 853 g | En ese orden: `aux` es el más pequeño y valida la geometría de módulo barato |
+| 5 | 2 `brida` + 3 `cuna` | 186 g | El ladrón, que va desacoplado y es lo de menos riesgo |
 
 Todo sin soportes y sin reorientar nada.
 
@@ -81,23 +81,25 @@ cama, 193 sobre el de 220). Los raíles entran de dos en dos.
 
 ## Filamento
 
-**~1,6 kg**, así que **dos bobinas**. Desglose:
+**~1,55 kg**, así que **dos bobinas**. Desglose:
 
 | Pieza | ud | g/ud | total |
 |---|---|---|---|
-| `rail` | 4 | 92 | 368 g |
-| `router` | 1 | 373 | 373 g |
-| `m920q` | 1 | 329 | 329 g |
-| `brida` | 2 | 78 | 156 g |
-| `aux` | 1 | 172 | 172 g |
-| `galga` | 2 | 47 | 94 g |
-| `cuna` | 4 | 12 | 46 g |
-| `testigo` | 1 | 33 | 33 g |
-| | | | **1571 g** |
+| `rail` | 4 | 90 | 359 g |
+| `router` | 1 | 364 | 364 g |
+| `m920q` | 1 | 321 | 321 g |
+| `brida` | 2 | 76 | 152 g |
+| `aux` | 1 | 168 | 168 g |
+| `galga` | 2 | 46 | 91 g |
+| `cuna` | 4 | 11 | 45 g |
+| `testigo-cabeza` | 1 | 23 | 23 g |
+| `testigo-rail` | 1 | 16 | 16 g |
+| | | | **1541 g** |
 
-De esos, 127 g son útiles de montaje (`testigo` y `galga`) que se tiran después.
+De esos, 130 g son útiles de montaje (los dos `testigo` y las `galga`) que se
+tiran después.
 
-Calculado sobre el volumen de malla por densidad del PLA, con un 0,9 por las zonas
+Calculado sobre el volumen de malla por densidad del PLA (1,24 g/cm³), con un 0,9 por las zonas
 gruesas. No está cortado con slicer, pero el margen de error es pequeño: casi toda
 la pieza son paredes de 3 a 6 mm y con 6 perímetros eso sale macizo pase lo que
 pase con el relleno. Cuenta con 1,5–1,8 kg.
