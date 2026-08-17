@@ -6,8 +6,8 @@ abierto para la cortina, todo en una pieza plana de 4 mm.
 
 ```
       ,-----.
-     /       \      aro cerrado, D interior 32 mm
-    (  barra  )     (la barra es de 22: 5 mm de aire por lado)
+     /       \      aro cerrado, D interior 26 mm
+    (  barra  )     (la barra es de 22: 2 mm de aire por lado)
      \       /
       `--,--'
          |          cuello, 3 mm de hueco
@@ -18,12 +18,13 @@ abierto para la cortina, todo en una pieza plana de 4 mm.
 
 | | |
 |---|---|
-| Anilla completa | **41 x 58 x 4 mm** |
-| Diámetro interior del aro | **32 mm** (barra de 22) |
+| Anilla completa | **35 x 52 x 4 mm** |
+| Diámetro interior del aro | **26 mm** (barra de 22) |
 | Sección del aro | 4,5 x 4 mm |
 | Hueco del gancho | 8 mm de diámetro |
-| Abertura del gancho | **3,5 mm** |
-| Peso | 3 g por anilla, **37 g las 12** |
+| Abertura del gancho | **2,5 mm** |
+| Sección más fina de la pieza | 3 mm (el alambre del gancho y el cuello) |
+| Peso | 2,6 g por anilla, **31 g las 12** |
 | Tiempo | ~1 h la tanda de 12 |
 | Soportes | ninguno |
 
@@ -35,17 +36,39 @@ y no abrirse nunca más: el tirón de la cortina va en esa misma dirección. Un 
 cerrado no tiene nada que ceder, roza menos y desliza mejor. El precio es
 montarlo: hay que descolgar la barra una vez y ensartar las 12.
 
+**Ningún hueco abierto puede ser mayor que la sección más fina de la pieza.** Es
+la regla que gobierna el diseño, y la que se saltó la primera versión: tenía 5 mm
+de aire por lado dentro de un aro de 32 mm. Con la pieza de 4 mm de espesor, ese
+hueco de 5 se traga una anilla entera. Al tumbarse, el borde inferior de una se
+cuela por debajo de la barra en la de al lado y quedan **eslabonadas** como una
+cadena. No era un problema de acabado ni de rozamiento: el hueco era más grande
+que la pieza.
+
+Ahora los dos únicos huecos abiertos son **2 mm** (aire dentro del aro) y **2,5 mm**
+(la boca del gancho), contra una sección mínima de **3 mm**. Nada de la anilla
+vecina cabe por ninguno de los dos, se tumbe lo que se tumbe: no existe una
+postura en la que se puedan enganchar. El `.scad` lo comprueba con un `assert`,
+así que si tocas `holgura_barra`, `hueco` o cualquier grosor y rompes la regla, no
+exporta.
+
+**El precio es que se inclina menos, y no hay forma de evitarlo.** Un aro holgado
+se inclina y toca la barra en un punto, así que rueda en vez de arrastrar; uno
+ajustado desliza rozando. Pero inclinarse mucho es exactamente lo que le permite
+meterse en la de al lado: son la misma propiedad vista por los dos lados, y no se
+pueden separar. Con 26 mm la anilla todavía se ladea unos **24°** (antes 39°), de
+sobra para que ruede, y ya no alcanza a su vecina. Si algún día quieres más
+holgura, sube `grosor` a la par: lo que manda es que la holgura sea menor que el
+espesor.
+
 **El gancho sí es abierto.** Lo que se pone y se quita a menudo es la cortina,
 no las anillas. Con el gancho abierto la cortina entra y sale sin tocar la barra,
-y la abertura (3,5 mm) mira hacia arriba-derecha, en contra de la dirección en la
-que tira la cortina: para que se salga hay que levantar el ojal y girarlo a mano.
+y la abertura mira hacia arriba-derecha, en contra de la dirección en la que tira
+la cortina: para que se salga hay que levantar el ojal y girarlo a mano.
 
-**El aro va holgado a propósito: 32 mm para una barra de 22.** No es holgura de
-tolerancia, es de funcionamiento. Un aro ajustado se apoya en la barra en toda su
-mitad superior y desliza rozando; uno holgado se inclina y toca en un punto, así
-que **rueda** en vez de arrastrar. Es por lo que las anillas compradas son tan
-grandes en comparación con la barra. Con 5 mm por lado la anilla se inclina lo
-suficiente para rodar y no tanto como para trabarse en diagonal.
+Esa abertura es de **2,5 mm** por la misma regla: con los 3,5 mm que tenía, el
+cuello de la anilla vecina (3 mm) entraba justo por ahí. La tela sigue pasando de
+sobra. Si el ojal de tu cortina lleva un aro metálico grueso y ves que no entra,
+`-D hueco=3.5` y vuelves a exportar, pero pierdes la garantía.
 
 **Se imprime tumbada, y esto no es un detalle.** El plano de la anilla va sobre
 la cama:
@@ -74,9 +97,13 @@ compensa lo que engorda la esfera facetada, no su radio.
 
 ## Antes de imprimir: mide la barra
 
-Es el único dato que importa. Con el calibre, **por fuera del tubo**, en la parte
-que no está solapada si es extensible (una barra telescópica tiene dos diámetros:
-usa el **grueso**, que es por donde van a pasar las anillas).
+Es el único dato que importa, y ahora más que antes: el aro solo deja 2 mm de aire
+por lado, así que ya no perdona un error de 3 mm. Con el calibre, **por fuera del
+tubo**, en la parte que no está solapada si es extensible (una barra telescópica
+tiene dos diámetros: usa el **grueso**, que es por donde van a pasar las anillas).
+Si la barra tiene un resalte o un embellecedor en algún punto del recorrido,
+mídelo también: con esta holgura las anillas ya no pasan por encima de cualquier
+cosa.
 
 Si no es de 22 mm, cambia el parámetro y reexporta (el aro crece solo, la holgura
 se mantiene):
@@ -86,7 +113,13 @@ openscad -o stl/anilla.stl --export-format binstl -D d_barra=25 anillas-cortina-
 ```
 
 Y si el ojal de tu cortina es más pequeño de 6 mm, baja `w_gancho` a 2,4: el
-alambre tiene que pasar por el agujero (su diagonal es 3 x 4 mm ≈ 5 mm).
+alambre tiene que pasar por el agujero (su diagonal es 3 x 4 mm ≈ 5 mm). Ojo, eso
+adelgaza la sección mínima a 2,4 mm y el `assert` te va a parar: baja `hueco` a 2
+en la misma línea de comandos.
+
+```bash
+openscad -o stl/anilla.stl --export-format binstl -D w_gancho=2.4 -D hueco=2 anillas-cortina-ducha.scad
+```
 
 ## Imprimir
 
@@ -94,16 +127,17 @@ alambre tiene que pasar por el agujero (su diagonal es 3 x 4 mm ≈ 5 mm).
 |---|---|
 | Altura de capa | 0,2 mm |
 | Perímetros | 3 |
-| Relleno | 100 % (son 3 g, no merece la pena ahorrar) |
+| Relleno | 100 % (son 2,6 g, no merece la pena ahorrar) |
 | Soportes | no |
 | Orientación | tal cual sale del STL, tumbada |
 
-`anillas-x12.stl` es la tanda de 12 ya colocada (179 x 184 mm, entra en una cama
+`anillas-x12.stl` es la tanda de 12 ya colocada (155 x 166 mm, entra en una cama
 de 220). Si prefieres duplicar en el laminador, usa `anilla.stl`.
 
-**Imprime una primero.** Cuesta 3 g y dos minutos, y comprueba lo único que puede
-salir mal: que el aro pase por la barra con soltura y que el ojal entre y no se
-salga solo.
+**Imprime dos primero.** Cuestan 5 g y cuatro minutos, y comprueban las tres cosas
+que pueden salir mal: que el aro pase por la barra y deslice, que el ojal entre y
+no se salga solo, y —con las dos en la barra— que no haya forma de engancharlas
+una con otra por mucho que las retuerzas.
 
 ## Montaje
 
