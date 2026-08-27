@@ -420,11 +420,14 @@ module mod_m920q() {
 x_ps  = pared;                            // cubiculo de la fuente
 x_cv  = fuente_externa ? x_ps + ps_x + 5 : pared;   // cubiculo del conversor
 
-//  El conversor solo ocupa 90 de los 194 mm del vano. En vez de
-//  rellenar el resto con topes, va PEGADO A LA PARED TRASERA y los
-//  104 mm que sobran quedan como camara abierta para el bucle de
-//  servicio de la fibra, que en una mesa elevable hay que alojar en
-//  algun sitio. Sale mas ligero y ademas resuelve un problema real.
+//  DE AHI LOS DOS CUBICULOS: el conversor solo ocupa 90 de los 194 mm
+//  del vano. En vez de rellenar el resto con topes macizos, va PEGADO A
+//  LA PARED TRASERA y los 99 mm que quedan detras de su pared de
+//  retencion son camara ABIERTA A PROPOSITO, para el bucle de servicio
+//  de la fibra: con la mesa subiendo y bajando 60 cm el latiguillo
+//  necesita holgura en algun sitio, y ahi le caben ~37 mm de radio de
+//  curvatura, de sobra para un SC/APC.
+//  Sale mas ligero que macizarlo Y resuelve un problema real.
 y_cv_fin = M_wall/2 + c_y + 2;         // pared de retencion del conversor
 
 module mod_aux() {
