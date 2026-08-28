@@ -121,6 +121,34 @@ en la misma línea de comandos.
 openscad -o stl/anilla.stl --export-format binstl -D w_gancho=2.4 -D hueco=2 anillas-cortina-ducha.scad
 ```
 
+## Si la barra tiene un escalón entre tramos
+
+Barras en dos tramos (telescópicas, o con un manguito de unión) a veces
+tienen un salto de 1-1,5 mm de diámetro justo en la unión. La holgura del
+aro (2 mm por lado) es de sobra para que la anilla quepa, pero el canto
+del escalón hace tope contra el borde interior del aro cuando la anilla
+va inclinada y a velocidad — se nota como resistencia o, si el salto es
+mayor, como atasco. Forrar el tramo fino con cinta para igualar el
+diámetro no lo arregla del todo: solo cambia un escalón por dos más
+pequeños (los bordes de la cinta).
+
+La solución es agrandar el redondeo del aro con `redondeo_aro`, que es
+independiente del `redondeo` del cuello y el gancho: el aro es macizo y
+aguanta mucho más chaflán, pero el alambre del gancho (`w_gancho`, la
+sección más fina de la pieza) no. Un `assert` para cada uno impide
+pasarse y quedarse sin sección.
+
+`redondeo_aro` está en **2 mm**, el límite práctico con `grosor=4`: el
+`assert` deja apenas 0,14 mm de banda plana en el centro del aro antes de
+que las dos curvas del redondeo se toquen. Si aun así se nota el escalón,
+ya no hay margen por este lado — hay que subir `grosor` (o volver a la
+cinta en la barra) para poder subir `redondeo_aro` más.
+
+```bash
+openscad -o stl/anillas-x12.stl --export-format binstl -D 'pieza="placa"' \
+  anillas-cortina-ducha.scad
+```
+
 ## Imprimir
 
 | | |

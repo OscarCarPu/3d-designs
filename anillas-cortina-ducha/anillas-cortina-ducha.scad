@@ -42,7 +42,15 @@ holgura_barra = 2;     // aire por lado dentro del aro (ver README)
 /* --------------------- ARO ---------------------------------- */
 w_aro   = 4.5;   // grosor radial del aro
 grosor  = 4;     // espesor de la pieza (altura de impresion)
-redondeo = 0.8;  // radio del redondeo de todos los cantos
+
+/* --------------------- REDONDEO ------------------------------ */
+redondeo     = 0.8;   // radio del redondeo del cuello y el gancho
+redondeo_aro = 2;     // radio del redondeo del aro (ver README:
+                       // "la barra tiene un escalon entre tramos").
+                       // Puede subirse mas que `redondeo` porque el
+                       // aro es macizo (w_aro y grosor dan margen);
+                       // el gancho no, su alambre (w_gancho) ya es
+                       // la seccion minima de toda la pieza.
 
 /* --------------------- GANCHO ------------------------------- */
 w_gancho  = 3.0;   // seccion del alambre del gancho
@@ -78,6 +86,19 @@ assert(hueco < seccion_min,
        str("hueco (", hueco, ") debe ser < ", seccion_min,
            " o el cuello de la anilla vecina entra por el gancho"));
 
+// El redondeo se hace encogiendo el perfil "r_esf" antes de extruir y
+// volviendolo a engordar con minkowski (ver mas abajo). Si "r_esf" llega
+// a la mitad de una seccion, esa seccion desaparece del perfil en vez de
+// redondearse: el aro y el resto (cuello+gancho) se redondean por
+// separado y cada uno tiene su propio margen.
+r_esf     = redondeo*cos(180/n_esfera);
+r_esf_aro = redondeo_aro*cos(180/n_esfera);
+
+assert(2*r_esf < min(w_gancho, w_cuello, grosor),
+       str("redondeo (", redondeo, ") es demasiado grande: el cuello o el gancho se quedan sin seccion"));
+assert(2*r_esf_aro < min(w_aro, grosor),
+       str("redondeo_aro (", redondeo_aro, ") es demasiado grande: el aro se queda sin seccion"));
+
 r_c  = r_gancho + w_gancho/2;        // radio de la linea media del gancho
 cy   = -(r_ext + cuello + r_gancho + w_gancho);   // centro del gancho
 
@@ -97,14 +118,21 @@ module sector(r, a1, a2, n) {
         [for (i = [0:n]) let (a = a1 + (a2 - a1)*i/n) r*[cos(a), sin(a)]]));
 }
 
-module perfil() {
-    union() {
-        // --- aro ---
-        difference() {
-            circle(r = r_ext, $fn = n_aro);
-            circle(r = r_int, $fn = n_aro);
-        }
+// Perfil del aro solo. Va aparte porque se redondea con "redondeo_aro",
+// distinto del resto de la pieza (ver seccion REDONDEO mas arriba).
+module perfil_aro() {
+    difference() {
+        circle(r = r_ext, $fn = n_aro);
+        circle(r = r_int, $fn = n_aro);
+    }
+}
 
+// Cuello + gancho. El borde inferior del trapecio del cuello cae dentro
+// de la banda radial del aro (entre r_int y r_ext) a proposito: aunque
+// el aro y el resto se redondeen por separado y con distinto radio,
+// siguen solapando ahi y la union no deja hueco.
+module perfil_resto() {
+    union() {
         // --- cuello: trapecio, ancho arriba para no hacer esquina viva ---
         polygon([[-w_cuello/2, cy + r_c],
                  [ w_cuello/2, cy + r_c],
@@ -135,15 +163,26 @@ module perfil() {
    Se encoge y se sube "r_esf" y no "redondeo" porque la esfera facetada
    engorda eso y no su radio; asi las cotas salen clavadas y la pieza
    apoya en z=0.
+
+   El aro y el resto (cuello+gancho) pasan por este mismo truco por
+   separado, cada uno con su propio radio (redondeo_aro / redondeo) y
+   su propio "r_esf" (r_esf_aro / r_esf), y se unen ya en 3D. Los dos
+   arrancan en z=0 y miden "grosor" de alto sea cual sea su redondeo,
+   asi que encajan sin escalon entre ellos.
    ===================================================================== */
-r_esf = redondeo*cos(180/n_esfera);
+module redondear(r_esf_local, r_redondeo) {
+    translate([0, 0, r_esf_local])
+    minkowski() {
+        linear_extrude(grosor - 2*r_esf_local)
+            offset(delta = -r_esf_local) children();
+        sphere(r = r_redondeo, $fn = n_esfera);
+    }
+}
 
 module anilla() {
-    translate([0, 0, r_esf])
-    minkowski() {
-        linear_extrude(grosor - 2*r_esf)
-            offset(delta = -r_esf) perfil();
-        sphere(r = redondeo, $fn = n_esfera);
+    union() {
+        redondear(r_esf_aro, redondeo_aro) perfil_aro();
+        redondear(r_esf,     redondeo)     perfil_resto();
     }
 }
 
@@ -167,3 +206,4 @@ echo(str("Diametro interior del aro: ", 2*r_int, " mm para barra de ",
          d_barra, " mm"));
 echo(str("Anti-enganche: huecos ", holgura_barra, " / ", hueco,
          " mm frente a seccion minima de ", seccion_min, " mm"));
+echo(str("Redondeo: aro ", redondeo_aro, " mm, cuello/gancho ", redondeo, " mm"));
