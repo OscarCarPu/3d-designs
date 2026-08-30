@@ -145,3 +145,19 @@ Ranuras para bridas en todos los módulos.
 ## STLs
 
 En `stl/`, listos para el slicer. Ninguno necesita soportes ni reorientar.
+
+## Guía de montaje
+
+`guia/montaje.html` — guía visual paso a paso con renders del propio modelo.
+Publicada como Artifact para poder abrirla en el móvil mientras montas.
+
+Para regenerarla:
+
+```sh
+./guia/render.sh     # renders (uno por paso) a guia/img/
+python3 guia/build.py   # empotra las imágenes en la plantilla -> guia/montaje.html
+```
+
+Las escenas están en `guia.scad`, una por paso, con la pieza que se añade en
+naranja y lo ya montado en gris. Las imágenes van empotradas como data URI
+porque un Artifact publicado no puede cargar imágenes externas.

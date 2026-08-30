@@ -1,0 +1,434 @@
+<title>Homelab bajo la MITTZON</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Literata:opsz,wght@7..72,400;7..72,600&family=JetBrains+Mono:wght@500;700&display=swap">
+
+<style>
+:root{
+  --ink:#14171b; --ink2:#59616c; --ground:#e9ecef; --surface:#ffffff;
+  --line:#ccd2d9; --line2:#e2e6ea; --accent:#c9450a; --accent-soft:#fbeee7;
+  --steel:#79828d;
+  --f-disp:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --f-body:"Literata",Georgia,"Times New Roman",serif;
+  --f-mono:"JetBrains Mono","SFMono-Regular",Consolas,monospace;
+  --shell:min(1180px,100%);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ink:#e6e9ec; --ink2:#98a1ac; --ground:#101316; --surface:#191d21;
+    --line:#2b3238; --line2:#22272c; --accent:#ff6a26; --accent-soft:#2a1a12;
+    --steel:#8b949f;
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#e6e9ec; --ink2:#98a1ac; --ground:#101316; --surface:#191d21;
+  --line:#2b3238; --line2:#22272c; --accent:#ff6a26; --accent-soft:#2a1a12;
+  --steel:#8b949f;
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--ground); color:var(--ink);
+  font-family:var(--f-body); font-size:17px; line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{width:var(--shell); margin:0 auto; padding:0 24px}
+p{margin:0 0 .85em; max-width:66ch}
+strong{font-weight:600}
+code,.mono{font-family:var(--f-mono); font-size:.86em; font-weight:500}
+code{background:var(--line2); padding:.12em .38em; border-radius:3px}
+a{color:var(--accent)}
+
+/* ---------- cabecera ---------- */
+.head{border-bottom:2px solid var(--ink); padding:56px 0 0}
+.eyebrow{
+  font-family:var(--f-mono); font-size:12px; font-weight:700;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--accent);
+  margin:0 0 14px;
+}
+h1{
+  font-family:var(--f-disp); font-weight:800; font-size:clamp(38px,7vw,66px);
+  line-height:1.02; letter-spacing:-.025em; margin:0 0 16px; text-wrap:balance;
+}
+.sub{font-size:19px; color:var(--ink2); max-width:60ch; margin:0 0 34px}
+.facts{
+  display:flex; flex-wrap:wrap; gap:0; border-top:1px solid var(--line);
+  margin:0 0 -2px; list-style:none; padding:0;
+}
+.facts li{
+  flex:1 1 150px; padding:16px 20px 18px 0; border-right:1px solid var(--line);
+}
+.facts li:last-child{border-right:0}
+.facts b{
+  display:block; font-family:var(--f-mono); font-weight:700;
+  font-size:24px; letter-spacing:-.02em; font-variant-numeric:tabular-nums;
+}
+.facts span{font-size:13px; color:var(--ink2)}
+
+/* ---------- secciones ---------- */
+section{padding:52px 0}
+h2{
+  font-family:var(--f-disp); font-weight:700; font-size:13px;
+  letter-spacing:.15em; text-transform:uppercase; color:var(--ink2);
+  margin:0 0 26px; padding-bottom:10px; border-bottom:1px solid var(--line);
+}
+
+/* ---------- panel de piezas ---------- */
+.cols{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:34px}
+.card{
+  background:var(--surface); border:1px solid var(--line);
+  border-radius:2px; padding:22px 24px;
+}
+.card h3{
+  font-family:var(--f-disp); font-size:15px; font-weight:700;
+  letter-spacing:.04em; margin:0 0 14px;
+}
+.plist{list-style:none; margin:0; padding:0; font-size:15px}
+.plist li{
+  display:flex; justify-content:space-between; gap:12px;
+  padding:7px 0; border-bottom:1px solid var(--line2);
+}
+.plist li:last-child{border-bottom:0}
+.plist .q{font-family:var(--f-mono); font-weight:700; color:var(--accent); font-variant-numeric:tabular-nums}
+
+/* ---------- pasos ---------- */
+.step{
+  display:grid; grid-template-columns:64px 1fr; gap:0 22px;
+  padding:38px 0; border-top:1px solid var(--line);
+}
+.step:first-of-type{border-top:2px solid var(--ink)}
+.num{
+  font-family:var(--f-disp); font-weight:800; font-size:44px; line-height:.9;
+  color:var(--accent); font-variant-numeric:tabular-nums; letter-spacing:-.04em;
+  padding-top:2px;
+}
+.step h3{
+  font-family:var(--f-disp); font-weight:700; font-size:clamp(22px,3vw,30px);
+  line-height:1.15; letter-spacing:-.015em; margin:0 0 16px; text-wrap:balance;
+}
+.body,.shot,.dia{grid-column:2}
+.shot{
+  margin:4px 0 20px; background:var(--surface);
+  border:1px solid var(--line); border-radius:2px; overflow:hidden;
+}
+.shot img{display:block; width:100%; height:auto}
+.shot figcaption{
+  font-family:var(--f-mono); font-size:12px; color:var(--ink2);
+  padding:9px 14px; border-top:1px solid var(--line2);
+}
+@media (min-width:920px){
+  .step{grid-template-columns:64px minmax(0,1.05fr) minmax(0,1fr); gap:0 30px}
+  .step h3{grid-column:2/-1}
+  .body{grid-column:2; grid-row:2}
+  .shot,.dia{grid-column:3; grid-row:2; margin-top:4px; align-self:start}
+}
+
+/* ---------- cotas criticas ---------- */
+.cota{
+  display:flex; gap:16px; align-items:flex-start;
+  background:var(--accent-soft); border-left:3px solid var(--accent);
+  padding:15px 18px; margin:18px 0; border-radius:0 2px 2px 0;
+}
+.cota .v{
+  font-family:var(--f-mono); font-weight:700; font-size:21px; color:var(--accent);
+  white-space:nowrap; font-variant-numeric:tabular-nums; line-height:1.3;
+}
+.cota p{margin:0; font-size:15px; line-height:1.55}
+
+/* ---------- marcar como hecho ---------- */
+.done{
+  display:inline-flex; align-items:center; gap:9px; margin-top:6px;
+  font-family:var(--f-mono); font-size:12px; letter-spacing:.06em;
+  text-transform:uppercase; color:var(--ink2); cursor:pointer; user-select:none;
+}
+.done input{width:17px; height:17px; accent-color:var(--accent); cursor:pointer; margin:0}
+.step.ok .num{color:var(--steel)}
+.step.ok h3{color:var(--ink2)}
+.step.ok .shot{opacity:.42}
+
+/* ---------- diagramas ---------- */
+.dia{
+  background:var(--surface); border:1px solid var(--line);
+  padding:18px; margin:4px 0 20px; border-radius:2px;
+}
+.dia svg{display:block; width:100%; height:auto}
+.dia .lbl{font-family:var(--f-mono); font-size:5px; font-weight:700; fill:var(--ink2)}
+.dia .dim{font-family:var(--f-mono); font-size:5.5px; font-weight:700; fill:var(--accent)}
+.dia .part{fill:var(--surface); stroke:var(--ink); stroke-width:.7}
+.dia .steelf{fill:var(--steel)}
+.dia .wood{fill:var(--line2); stroke:var(--line); stroke-width:.6}
+.dia .acc{fill:none; stroke:var(--accent); stroke-width:.8}
+
+/* ---------- cierre ---------- */
+.final{border-top:2px solid var(--ink); padding-top:44px}
+.duo{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:24px}
+footer{
+  border-top:1px solid var(--line); margin-top:40px; padding:22px 0 60px;
+  font-family:var(--f-mono); font-size:12px; color:var(--ink2);
+}
+@media print{
+  body{background:#fff; font-size:11pt}
+  .done,.facts{display:none}
+  .step{break-inside:avoid; border-top:1px solid #999}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
+</style>
+
+<div class="wrap">
+
+<header class="head">
+  <p class="eyebrow">Guía de montaje · IKEA MITTZON 140×80 elevable</p>
+  <h1>Homelab bajo la MITTZON</h1>
+  <p class="sub">Router, conversor de fibra, ThinkCentre M920q y un ladrón de 400 mm,
+  colgados del bajo del tablero. Nada toca el suelo.</p>
+  <ul class="facts">
+    <li><b>87,3 mm</b><span>Caída bajo el tablero</span></li>
+    <li><b>459 mm</b><span>Ancho de la fila</span></li>
+    <li><b>12</b><span>Tornillos</span></li>
+    <li><b>~4 kg</b><span>Peso soportado</span></li>
+  </ul>
+</header>
+
+<section>
+  <h2>Antes de empezar</h2>
+  <div class="cols">
+    <div class="card">
+      <h3>Piezas impresas</h3>
+      <ul class="plist">
+        <li><span><code>rail</code></span><span class="q">×4</span></li>
+        <li><span><code>galga</code></span><span class="q">×2</span></li>
+        <li><span><code>m920q</code></span><span class="q">×1</span></li>
+        <li><span><code>aux</code></span><span class="q">×1</span></li>
+        <li><span><code>router</code></span><span class="q">×1</span></li>
+        <li><span><code>cuna</code></span><span class="q">×4</span></li>
+        <li><span><code>brida</code></span><span class="q">×2</span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Herramientas</h3>
+      <ul class="plist">
+        <li><span>Taladro, broca de 3 mm</span><span class="q">·</span></li>
+        <li><span>Tope de profundidad a 15 mm</span><span class="q">·</span></li>
+        <li><span>Destornillador</span><span class="q">·</span></li>
+        <li><span>Calibre</span><span class="q">·</span></li>
+        <li><span>Lápiz o punzón</span><span class="q">·</span></li>
+        <li><span>Tornillos de madera ≤20 mm</span><span class="q">×12</span></li>
+        <li><span>Bridas de plástico</span><span class="q">·</span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Comprueba primero</h3>
+      <p style="font-size:15px;margin:0 0 12px">Mide con calibre la <strong>cabeza</strong>
+      de tus tornillos, por su parte más ancha. Si pasa de 13 mm no entra por la
+      bocallave y hay que rehacer los raíles.</p>
+      <p style="font-size:15px;margin:0">El diseño está hecho para <span class="mono">Ø11 mm</span>.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Montaje · 8 pasos</h2>
+
+  <article class="step" id="p1">
+    <div class="num">1</div>
+    <h3>Une los dos segmentos de cada raíl</h3>
+    <div class="body">
+      <p>Cada raíl son dos segmentos que encajan por un machihembrado en los labios.
+      Empújalos a tope hasta que las caras queden a ras: el canal tiene que quedar
+      continuo o los módulos no pasarán por la junta.</p>
+      <p>Hazlo en la mesa, no en el aire. Repite con el segundo raíl.</p>
+      <label class="done"><input type="checkbox" data-step="p1"> Hecho</label>
+    </div>
+    <figure class="shot">{{paso1}}<figcaption>Los dos segmentos antes de encajar. La lengüeta va en los labios.</figcaption></figure>
+  </article>
+
+  <article class="step" id="p2">
+    <div class="num">2</div>
+    <h3>Mete las dos galgas</h3>
+    <div class="body">
+      <p>Desliza una galga por cada extremo, entrando por la boca de los canales.
+      Son las que mantienen los dos raíles a <span class="mono">200 mm</span> exactos
+      mientras marcas. Sin ellas los raíles se abren y los módulos luego no entran.</p>
+      <p>Las galgas no se quedan puestas: son un útil de montaje.</p>
+      <label class="done"><input type="checkbox" data-step="p2"> Hecho</label>
+    </div>
+    <figure class="shot">{{paso2}}<figcaption>Galgas en naranja, uniendo los dos raíles.</figcaption></figure>
+  </article>
+
+  <article class="step" id="p3">
+    <div class="num">3</div>
+    <h3>Ofrece al tablero y marca las 8 bocallaves</h3>
+    <div class="body">
+      <p>Sube el conjunto contra el bajo del tablero, con el raíl trasero a unos
+      <span class="mono">150 mm</span> del canto de atrás. Comprueba que las columnas
+      del bastidor elevable no estorban.</p>
+      <p>Marca a través del <strong>agujero grande</strong> de cada bocallave, el
+      redondo. Son 8 marcas, dos por segmento, alternadas a un lado y otro.</p>
+      <div class="cota">
+        <div class="v">150 mm</div>
+        <p>Del canto trasero de la mesa al eje del raíl trasero. Deja sitio para el
+        ladrón por detrás y ~430 mm de hueco para las piernas por delante.</p>
+      </div>
+      <label class="done"><input type="checkbox" data-step="p3"> Hecho</label>
+    </div>
+    <figure class="shot">{{paso3}}<figcaption>Las 8 marcas, en naranja, vistas a través del tablero.</figcaption></figure>
+  </article>
+
+  <article class="step" id="p4">
+    <div class="num">4</div>
+    <h3>Taladra y atornilla dejando 3,5 mm fuera</h3>
+    <div class="body">
+      <p>Broca de 3 mm con tope a <span class="mono">15 mm</span>: el tablero son
+      20 mm de aglomerado y no conviene atravesarlo. Tornillos de
+      <span class="mono">20 mm</span> de largo total o menos.</p>
+      <p>Y aquí está la cota que decide si esto funciona: <strong>no los aprietes del
+      todo</strong>. La pieza se cuelga en el hueco que queda entre la cabeza del
+      tornillo y la madera.</p>
+      <div class="cota">
+        <div class="v">3,5 mm</div>
+        <p>De vástago sin roscar, en los 12 tornillos. Ajusta el primero con el
+        calibre y usa esa misma profundidad en los demás.</p>
+      </div>
+      <label class="done"><input type="checkbox" data-step="p4"> Hecho</label>
+    </div>
+    <div class="dia">
+      <svg viewBox="0 0 200 74" role="img" aria-label="Sección del tornillo y planta de la bocallave">
+        <text class="lbl" x="2" y="7">SECCIÓN</text>
+        <rect class="wood" x="4" y="10" width="86" height="20"/>
+        <text class="lbl" x="8" y="23">TABLERO 20</text>
+        <rect class="steelf" x="44" y="12" width="6" height="18"/>
+        <rect class="steelf" x="44" y="30" width="6" height="9.5"/>
+        <rect class="steelf" x="38" y="39.5" width="18" height="4"/>
+        <rect class="part" x="10" y="30" width="34" height="3.5"/>
+        <rect class="part" x="50" y="30" width="34" height="3.5"/>
+        <text class="lbl" x="12" y="50">PLACA DEL RAÍL 3,5</text>
+        <path class="acc" d="M62 30 L74 30 M62 39.5 L74 39.5 M70 30 L70 39.5"/>
+        <path class="acc" d="M67.5 32.5 L70 30 L72.5 32.5 M67.5 37 L70 39.5 L72.5 37"/>
+        <text class="dim" x="76" y="37">3,5 mm</text>
+        <text class="lbl" x="104" y="7">PLANTA DE LA OREJA</text>
+        <rect class="part" x="104" y="12" width="92" height="44" rx="1"/>
+        <circle cx="130" cy="34" r="6.5" fill="none" stroke="var(--ink)" stroke-width=".7"/>
+        <rect x="130" y="30.25" width="32" height="7.5" fill="none" stroke="var(--ink)" stroke-width=".7"/>
+        <circle cx="162" cy="34" r="3.75" fill="none" stroke="var(--ink)" stroke-width=".7"/>
+        <circle cx="130" cy="34" r="5.5" class="steelf" opacity=".45"/>
+        <circle cx="162" cy="34" r="3" class="steelf"/>
+        <path class="acc" d="M130 47 L162 47 M130 44.5 L130 49.5 M162 44.5 L162 49.5"/>
+        <text class="dim" x="136" y="54">16 mm</text>
+        <text class="lbl" x="112" y="24">Ø13 entra</text>
+        <text class="lbl" x="152" y="24">Ø7,5 agarra</text>
+      </svg>
+    </div>
+  </article>
+
+  <article class="step" id="p5">
+    <div class="num">5</div>
+    <h3>Cuelga los raíles y deslízalos 16 mm</h3>
+    <div class="body">
+      <p>Pasa las cabezas de los tornillos por los agujeros redondos, apoya el raíl
+      contra la madera y <strong>deslízalo 16 mm</strong> hasta que el vástago llegue
+      al fondo de la ranura estrecha. Ahí queda bloqueado.</p>
+      <p>Los dos raíles deslizan en el mismo sentido. Quita las galgas.</p>
+      <label class="done"><input type="checkbox" data-step="p5"> Hecho</label>
+    </div>
+    <figure class="shot">{{paso5}}<figcaption>Raíles colgados y bloqueados, con los 8 tornillos.</figcaption></figure>
+  </article>
+
+  <article class="step" id="p6">
+    <div class="num">6</div>
+    <h3>Mete los módulos, ya cargados</h3>
+    <div class="body">
+      <p>Cada módulo entra <strong>deslizando por el canal desde un extremo</strong>,
+      con su aparato dentro. Pesan poco más de un kilo cada uno. Van en este orden:</p>
+      <p><span class="mono">router → conversor → M920q</span></p>
+      <p>El M920q queda en el extremo a propósito: es lo que más vas a tocar y así
+      sale sin desmontar los otros dos. Va boca arriba, ventila por arriba, y con los
+      puertos hacia el frente de la mesa.</p>
+      <label class="done"><input type="checkbox" data-step="p6"> Hecho</label>
+    </div>
+    <figure class="shot">{{paso6}}<figcaption>El módulo del M920q entrando por la boca del raíl.</figcaption></figure>
+  </article>
+
+  <article class="step" id="p7">
+    <div class="num">7</div>
+    <h3>Clava una cuña en cada boca</h3>
+    <div class="body">
+      <p>Cuatro cuñas: una en cada extremo de cada raíl. Entran con el
+      <strong>extremo fino por delante</strong> y se aprietan en altura contra los
+      labios. Son lo que impide que un módulo se salga deslizando.</p>
+      <p>La pestaña del testero es más ancha que el canal, así que topa sola y no te
+      puedes pasar metiéndola. Para sacarla, un destornillador en el agujero.</p>
+      <div class="cota">
+        <div class="v">14 mm</div>
+        <p>De cuña. Es lo que cabe entre el final del raíl y la cabeza del módulo, ni
+        un milímetro más. Si tienes cuñas de 45 mm impresas, son de una versión
+        anterior y no entran.</p>
+      </div>
+      <label class="done"><input type="checkbox" data-step="p7"> Hecho</label>
+    </div>
+    <figure class="shot">{{paso7}}<figcaption>Cuña en naranja, entrando por la boca del canal.</figcaption></figure>
+  </article>
+
+  <article class="step" id="p8">
+    <div class="num">8</div>
+    <h3>Atornilla las bridas del ladrón</h3>
+    <div class="body">
+      <p>Las dos bridas van <strong>aparte del sistema de raíles</strong>, atornilladas
+      directas al tablero por detrás del raíl trasero, con sus 4 tornillos propios y
+      el mismo saliente de 3,5 mm.</p>
+      <p>Sepáralas unos <span class="mono">260 mm</span> entre sí para repartir el
+      ladrón. Empuja la regleta hacia arriba hasta que pase los labios, y si te baila
+      pasa una brida de plástico por las ranuras del fondo.</p>
+      <label class="done"><input type="checkbox" data-step="p8"> Hecho</label>
+    </div>
+    <figure class="shot">{{paso8}}<figcaption>Una brida sujetando el ladrón, con sus dos tornillos.</figcaption></figure>
+  </article>
+</section>
+
+<section class="final">
+  <h2>Terminado</h2>
+  <div class="duo">
+    <figure class="shot">{{paso9}}<figcaption>Montaje completo, con los aparatos dentro.</figcaption></figure>
+    <figure class="shot">{{paso10}}<figcaption>Planta. Ladrón detrás; delante, el hueco para las piernas.</figcaption></figure>
+  </div>
+  <div class="cota" style="margin-top:26px">
+    <div class="v">Fibra</div>
+    <p>Deja un bucle de servicio holgado en el latiguillo, dentro de la cámara libre
+    del módulo del conversor. La mesa sube y baja 60 cm dos veces al día, y la flexión
+    repetida en radio corto es lo que acaba matando una fibra a los meses. Que cuelgue
+    suelto, nunca tirante.</p>
+  </div>
+</section>
+
+<footer class="wrap" style="padding-left:0;padding-right:0;width:auto">
+  Renders generados con <span class="mono">guia.scad</span> · Modelo:
+  <span class="mono">bajomesa_homelab.scad</span>
+</footer>
+
+</div>
+
+<script>
+(function(){
+  var K = "bajomesa-guia-v1", done = [];
+  try { done = JSON.parse(localStorage.getItem(K) || "[]") || []; } catch (e) { done = []; }
+  var boxes = document.querySelectorAll(".done input");
+  Array.prototype.forEach.call(boxes, function (b) {
+    var id = b.getAttribute("data-step");
+    if (done.indexOf(id) !== -1) { b.checked = true; }
+    sync(b);
+    b.addEventListener("change", function () {
+      var i = done.indexOf(id);
+      if (b.checked && i === -1) { done.push(id); }
+      if (!b.checked && i !== -1) { done.splice(i, 1); }
+      try { localStorage.setItem(K, JSON.stringify(done)); } catch (e) {}
+      sync(b);
+    });
+  });
+  function sync(b){
+    var step = b.closest(".step");
+    if (step) { step.classList.toggle("ok", b.checked); }
+    var label = b.parentNode;
+    label.lastChild.nodeValue = b.checked ? " Hecho" : " Marcar como hecho";
+  }
+})();
+</script>

@@ -180,8 +180,15 @@ W_TOTAL  = W_m920q + W_aux + W_router;
 
 // Railes: se trocean en el minimo numero de segmentos imprimibles
 L_RAIL = W_TOTAL + 12;
-N_SEG  = ceil(L_RAIL / R_MAX);
+N_SEG  = ceil(L_RAIL / (R_MAX - R_key));   // lo que se imprime es R_seg + R_key
 R_seg  = L_RAIL / N_SEG;
+
+// Hueco de canal libre en cada extremo de la fila, entre el final del
+// rail y el arranque de la cabeza T del modulo exterior. De aqui sale
+// el largo de la cuna: si se dimensiona a ojo no cabe, que es lo que
+// pasaba antes con una cuna de 45 mm en un hueco de 16.
+CUNA_HUECO = (L_RAIL - W_TOTAL)/2 + 10;
+CUNA_L     = CUNA_HUECO - 2;
 
 // Y exterior de los modulos (comun a todos)
 Y0 = -M_wall/2;
@@ -271,19 +278,27 @@ module rail_seg(L = R_seg) {
     }
 }
 
-// Cuna de bloqueo: entra en el canal por el extremo y se acuna en
-// altura contra los labios. El agujero del testero sirve para
-// engancharla con un destornillador y sacarla.
-module cuna(L = 45) {
-    e0 = R_ch_h - 1.0;
-    e1 = R_ch_h + 0.5;
+// Cuna de bloqueo: entra en el canal por el extremo de la fila, con el
+// extremo fino por delante, y se acuna en ALTURA contra los labios. Es
+// lo que impide que un modulo se salga deslizando por la boca del rail.
+//
+// El largo sale de CUNA_HUECO, no de un numero a ojo: en el canal solo
+// quedan libres los milimetros que sobran del rail mas los 10 mm de
+// retranqueo de la cabeza T. La pestana del testero es mas ancha que
+// el canal, asi que topa y no se puede pasar de rosca metiendola; y de
+// paso da donde agarrar y donde dar el golpe para sacarla.
+module cuna(L = CUNA_L) {
+    e0 = R_ch_h - 0.8;
+    e1 = R_ch_h + 0.6;
     difference() {
-        hull() {
-            translate([0, -hd_w/2, 0]) cube([0.01, hd_w, e0]);
-            translate([L, -hd_w/2, 0]) cube([0.01, hd_w, e1]);
+        union() {
+            hull() {
+                translate([0, -hd_w/2, 0]) cube([0.01, hd_w, e0]);
+                translate([L, -hd_w/2, 0]) cube([0.01, hd_w, e1]);
+            }
+            translate([L, -(RW + 4)/2, 0]) cube([3, RW + 4, e1]);
         }
-        translate([L + 0.1, 0, e1/2]) rotate([0, -90, 0])
-            cylinder(h = 12, d = 4);
+        translate([L + 3.1, 0, e1/2]) rotate([0, -90, 0]) cylinder(h = 12, d = 4);
     }
 }
 
