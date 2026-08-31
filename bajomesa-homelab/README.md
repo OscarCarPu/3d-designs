@@ -56,19 +56,37 @@ Si pasa de 13 mm no cabe por la bocallave; sube `d_cabeza` y el círculo crece s
 
 **Tornillos:** tablero de 20 mm → usa tornillos de **20 mm de largo total o menos**.
 
-**Arandela obligatoria bajo la cabeza.** Sin ella el labio de plástico que
-aguanta la cabeza del tornillo (Ø11) tiene solo 1,75 mm por lado — sujeta, pero
-si el tornillo tiene cabeza abombada o avellanada ese cono acaba abriendo la
-ranura con el uso. `arandela.scad` genera una carrocera Ø18×1,6 (DIN 9021 M6)
-comprobada contra el hueco real de la oreja. Mejor en metal si puedes: 12
-unidades, un par de euros en cualquier ferretería. La versión impresa
-(`stl/arandela.scad`) vale de parche si no tienes acceso a una ferretería
-ahora mismo.
+**Refuerzo obligatorio bajo la cabeza (`arandela.scad`).** La cabeza del
+tornillo (Ø11) apoya sobre el labio a los lados de una ranura de 7,5 mm: son
+**19 mm² de apoyo real**, en dos medias lunas de 1,75 mm. Sujeta el peso de
+sobra, pero cede si alguien se apoya.
 
-La arandela **no pasa por el círculo de entrada de la bocallave** (Ø13):
-móntala con el raíl ya colgado, no antes. Y con ella puesta deja
-**3,5 + 1,6 = 5,1 mm** de vástago fuera del tablero en vez de 3,5 — ajusta la
-profundidad de atornillado.
+**Una arandela comprada no sirve, y no es cuestión de buscar una más grande.**
+El alojamiento de la cabeza mide 13 mm de ancho y el tornillo queda a 5,5 mm
+del fondo, así que la arandela redonda más grande que entra es de Ø11 — o sea,
+lo mismo que la cabeza. Una DIN 125 (12,5) o una carrocera (18) directamente no
+caben:
+
+| | Apoyo | vs. cabeza sola | ¿Entra? |
+|---|---|---|---|
+| Cabeza sola Ø11 | 19 mm² | 1,0× | — |
+| Arandela Ø11 | 19 mm² | 1,0× | sí, y no gana nada |
+| DIN 125 Ø12,5 | 35 mm² | 1,8× | **no** |
+| DIN 9021 Ø18 | 64 mm² | 3,3× | **no** |
+| **Placa oblonga impresa** | **56 mm²** | **2,9×** | **sí** |
+
+La única forma de ganar superficie es crecer **a lo largo** de la ranura, y eso
+no lo vende nadie: hay que imprimirlo. La pieza lleva además un **tope
+cilíndrico** que rellena el círculo de entrada, porque sin él nada impide que el
+raíl se deslice hacia atrás y se descuelgue.
+
+Se monta con el raíl ya colgado, de uno en uno (los otros 7 tornillos aguantan
+mientras): saca el tornillo, mételo por el agujero de la placa, mete el conjunto
+en el alojamiento **desde abajo** con el tope hacia el círculo de entrada, y
+aprieta dejando **5,5 mm** de vástago fuera (3,5 del labio + 2 de la placa) en
+vez de los 3,5 de antes.
+
+Son 12 unidades, 11 g en total.
 
 ## Orden de impresión
 

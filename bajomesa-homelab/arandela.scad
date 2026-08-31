@@ -1,65 +1,91 @@
 // =====================================================================
-//  ARANDELA DE REFUERZO PARA LAS BOCALLAVES DEL RAIL
+//  REFUERZO DE BOCALLAVE  (mal llamado "arandela": no es redonda)
 //
-//  Motivo: la cabeza del tornillo (Ø11) apoya sobre un labio de solo
-//  1,75 mm de plastico a cada lado de la ranura. Si el tornillo tiene
-//  cabeza abombada/avellanada, ese cono hace de cuna contra la ranura
-//  y acaba abriendola con el uso. Esta arandela reparte la carga sobre
-//  una superficie plana en vez de una linea, sin tocar el modelo.
+//  QUE PROBLEMA RESUELVE
+//  La cabeza del tornillo (11 mm) apoya sobre el labio de la bocallave
+//  a ambos lados de una ranura de 7,5 mm. Eso son 19 mm2 de apoyo
+//  real, repartidos en dos medias lunas de 1,75 mm. Poco.
 //
-//  MEJOR EN METAL: compra arandelas carroceras DIN 9021 M6 (Ø18x1,6),
-//  12 unidades, ~3 EUR en cualquier ferreteria. Esta pieza es sobre
-//  todo para verificar el encaje antes de comprar, o como parche de
-//  emergencia si no puedes ir a la ferreteria ahora mismo: repartir
-//  carga sobre PLA sigue siendo mejor que sobre la punta de un cono,
-//  pero el metal no fluye con el tiempo y el plastico si.
+//  POR QUE NO VALE UNA ARANDELA COMPRADA
+//  El alojamiento de la cabeza mide 13 mm de ancho y el tornillo queda
+//  a solo 5,5 mm del fondo. Cualquier arandela redonda que quepa tiene
+//  que medir 11 mm o menos, o sea lo mismo que la cabeza: no gana
+//  NADA. Una DIN 125 (12,5) o una carrocera (18) simplemente no entran.
+//  Por eso hay que imprimirla: la unica forma de ganar superficie es
+//  crecer a lo LARGO de la ranura, y eso no lo vende nadie.
 //
-//  ENCAJE COMPROBADO contra bajomesa_homelab.scad:
-//    - Ø18 SI pasa la oreja (23 mm de ancho), con margen de 2-3 mm.
-//    - Ø18 NO pasa el circulo de entrada de la bocallave (Ø13): monta
-//      la arandela con el rail YA COLGADO, no antes.
-//    - Con esta arandela, deja fuera del tablero 3,5 + espesor de
-//      arandela (por defecto 5,1 mm en vez de 3,5). Ajusta la
-//      profundidad de atornillado en consecuencia.
+//  QUE HACE ESTA PIEZA
+//    1. Placa oblonga de 12,4 mm de ancho que se mete en el alojamiento
+//       y apoya bajo el labio en toda la longitud de la ranura:
+//       56 mm2 en vez de 19. Y plana, sin el efecto cuna que hace una
+//       cabeza abombada al meterse en la ranura.
+//    2. Un TOPE cilindrico que rellena el circulo de entrada. Sin el,
+//       nada impide que el rail se deslice hacia atras y se descuelgue
+//       de los tornillos: es el otro fallo probable, y sale gratis.
 //
-//  Unidades: milimetros.
+//  COMO SE MONTA (con el rail YA COLGADO y deslizado)
+//    Uno a uno, los otros 7 tornillos aguantan mientras tanto:
+//      1. Saca el tornillo.
+//      2. Metelo por el agujero de la placa.
+//      3. Mete el conjunto en el alojamiento DESDE ABAJO, con el tope
+//         hacia el circulo de entrada. Se coloca solo.
+//      4. Aprieta dejando 5,5 mm de vastago fuera del tablero
+//         (3,5 del labio + 2 de la placa) en vez de los 3,5 de antes.
+//
+//  Unidades: milimetros. No necesita BOSL2.
 // =====================================================================
 
-/* --------- MEDIDAS (DIN 9021 M6 por defecto) ----------------------- */
-od      = 18;    // diametro exterior
-id      = 6.6;    // diametro interior (holgura sobre tornillo M6/Ø6)
-espesor = 1.6;    // grosor
-chaflan = 0.4;    // chaflan en el agujero, para que entre sin rebaba
+/* --------- MEDIDAS COPIADAS DEL RAIL (bajomesa_homelab.scad) -------- */
+d_cabeza    = 11;    hol_cabeza  = 2.0;
+d_vastago   = 6;     hol_vastago = 1.5;
+desliz      = 16;    RH          = 15;
+saliente_tornillo = 3.5;
 
-$fn = 64;
+/* --------- DERIVADAS DEL ALOJAMIENTO -------------------------------- */
+dh   = d_cabeza  + hol_cabeza;        // 13.0  ancho del alojamiento
+sw   = d_vastago + hol_vastago;       //  7.5  ancho de la ranura del labio
+prof = RH - saliente_tornillo;        // 11.5  profundidad del alojamiento
+x_tornillo = desliz - d_cabeza/2;     // 10.5  donde topa la cabeza al deslizar
 
-/* --------- COMPROBACION DE ENCAJE (contra el modelo del rail) ------ */
-// Copiadas de bajomesa_homelab.scad para no depender de el (evita
-// arrastrar BOSL2 solo para imprimir una arandela).
-d_vastago = 6;  R_ear = 22;
-eje_ranura = 36/2 + R_ear/2;                    // 29, eje Y de la bocallave
-oreja_y0 = 36/2 - 1;  oreja_y1 = oreja_y0 + R_ear + 1;   // 17 .. 40
+/* --------- LA PIEZA -------------------------------------------------- */
+hol_pieza = 0.3;                      // holgura contra las paredes
+ancho     = dh - 2*hol_pieza;         // 12.4
+x_atras   = -dh/2 + hol_pieza;        // -6.2
+x_alante  = desliz - hol_pieza;       // 15.7
+espesor   = 2;                        // placa
+d_paso    = d_vastago + 0.6;          //  6.6  agujero del vastago
+tope_h    = saliente_tornillo;        //  3.5  el tope llega hasta el tablero
+chaflan   = 0.5;
 
-echo(str("Sobre la cana del tornillo (", d_vastago, " mm): holgura ",
-         (id - d_vastago)/2, " mm por lado  ->  ",
-         id > d_vastago ? "OK" : "*** NO PASA, sube id ***"));
-margen = min(eje_ranura - od/2 - oreja_y0, oreja_y1 - eje_ranura - od/2);
-echo(str("Margen dentro de la oreja: ", margen, " mm  ->  ",
-         margen > 0 ? "CABE" : "*** NO CABE, baja od ***"));
+$fn = 72;
 
-/* --------- PIEZA ----------------------------------------------------- */
-module arandela() {
+module refuerzo() {
     difference() {
-        cylinder(h = espesor, d = od);
-        translate([0, 0, -0.1]) cylinder(h = espesor + 0.2, d = id);
-        // chaflan arriba y abajo del agujero, imprime sin rebaba y
-        // ayuda a centrar el tornillo al montarla
-        for (z = [0, espesor])
-            translate([0, 0, z]) rotate_extrude()
-                translate([id/2, 0]) polygon([[0,0],[chaflan,0],[0, z==0 ? chaflan : -chaflan]]);
+        union() {
+            hull() {
+                translate([x_atras  + ancho/2, 0, 0]) cylinder(h = espesor, d = ancho);
+                translate([x_alante - ancho/2, 0, 0]) cylinder(h = espesor, d = ancho);
+            }
+            // tope antideslizamiento, rellena el circulo de entrada
+            translate([0, 0, espesor]) cylinder(h = tope_h, d = ancho);
+        }
+        translate([x_tornillo, 0, -1]) cylinder(h = espesor + 2, d = d_paso);
+        // chaflan bajo el agujero: la cabeza asienta plana aunque tenga radio
+        translate([x_tornillo, 0, -0.01])
+            cylinder(h = chaflan, d1 = d_paso + 2*chaflan, d2 = d_paso);
     }
 }
 
-arandela();
+refuerzo();
 
-echo(str("Arandela: OD", od, " x ID", id, " x ", espesor, " mm"));
+/* --------- COMPROBACIONES CONTRA EL ALOJAMIENTO REAL ----------------- */
+echo(str("ancho ", ancho, " en alojamiento de ", dh,
+         "  -> ", ancho < dh ? "CABE" : "*** NO CABE ***"));
+echo(str("largo ", x_alante - x_atras, " en alojamiento de ", desliz + dh/2,
+         "  -> ", x_alante - x_atras < desliz + dh/2 ? "CABE" : "*** NO CABE ***"));
+echo(str("altura total ", espesor + tope_h, " en profundidad de ", prof,
+         "  -> queda ", prof - espesor, " mm para la cabeza"));
+echo(str("solape bajo el labio: ", (ancho - sw)/2, " mm por lado (antes ",
+         (d_cabeza - sw)/2, ")"));
+echo(str("material por delante del agujero: ", x_alante - x_tornillo - d_paso/2, " mm"));
+echo(str("SALIENTE DE TORNILLO NUEVO: ", saliente_tornillo + espesor, " mm"));
