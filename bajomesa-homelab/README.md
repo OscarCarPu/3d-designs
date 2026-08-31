@@ -56,37 +56,32 @@ Si pasa de 13 mm no cabe por la bocallave; sube `d_cabeza` y el círculo crece s
 
 **Tornillos:** tablero de 20 mm → usa tornillos de **20 mm de largo total o menos**.
 
-**Refuerzo obligatorio bajo la cabeza (`arandela.scad`).** La cabeza del
-tornillo (Ø11) apoya sobre el labio a los lados de una ranura de 7,5 mm: son
-**19 mm² de apoyo real**, en dos medias lunas de 1,75 mm. Sujeta el peso de
-sobra, pero cede si alguien se apoya.
+**Arandela obligatoria bajo la cabeza (`arandela.scad`).** La cabeza del
+tornillo es demasiado pequeña respecto a la ranura de deslizamiento y apenas
+pisa el labio del raíl: cede en cuanto alguien se apoya. La arandela la agranda.
 
-**Una arandela comprada no sirve, y no es cuestión de buscar una más grande.**
-El alojamiento de la cabeza mide 13 mm de ancho y el tornillo queda a 5,5 mm
-del fondo, así que la arandela redonda más grande que entra es de Ø11 — o sea,
-lo mismo que la cabeza. Una DIN 125 (12,5) o una carrocera (18) directamente no
-caben:
+La definen dos cotas, y son **las del raíl, no las del tornillo**:
 
-| | Apoyo | vs. cabeza sola | ¿Entra? |
-|---|---|---|---|
-| Cabeza sola Ø11 | 19 mm² | 1,0× | — |
-| Arandela Ø11 | 19 mm² | 1,0× | sí, y no gana nada |
-| DIN 125 Ø12,5 | 35 mm² | 1,8× | **no** |
-| DIN 9021 Ø18 | 64 mm² | 3,3× | **no** |
-| **Placa oblonga impresa** | **56 mm²** | **2,9×** | **sí** |
+| | |
+|---|---|
+| Menor que el círculo de entrada | **Ø13** — para que pase al colgar el raíl |
+| Mayor que la ranura de deslizamiento | **7,5** — para que pise el labio |
 
-La única forma de ganar superficie es crecer **a lo largo** de la ranura, y eso
-no lo vende nadie: hay que imprimirlo. La pieza lleva además un **tope
-cilíndrico** que rellena el círculo de entrada, porque sin él nada impide que el
-raíl se deslice hacia atrás y se descuelgue.
+Con **Ø12,2** quedan 2,35 mm de apoyo por lado en vez de 1,75, o 31 mm² de
+superficie contra 19. Va puesta en el tornillo desde el principio: no hay que
+desmontar nada. El raíl desliza 9,9 mm en vez de 10,5 antes de topar, y sigue
+bloqueando igual.
 
-Se monta con el raíl ya colgado, de uno en uno (los otros 7 tornillos aguantan
-mientras): saca el tornillo, mételo por el agujero de la placa, mete el conjunto
-en el alojamiento **desde abajo** con el tope hacia el círculo de entrada, y
-aprieta dejando **5,5 mm** de vástago fuera (3,5 del labio + 2 de la placa) en
-vez de los 3,5 de antes.
+**Mide el agujero interior.** Tiene que pasar la caña y ser claramente menor que
+la cabeza, o la cabeza se colará por la arandela. Si tu cabeza mide bastante
+menos de los 11 mm que asume el diseño — que es lo más probable si apenas
+agarra — baja `d_vastago` para que sobre más material.
 
-Son 12 unidades, 11 g en total.
+En metal también vale: una **DIN 125 M6** (Ø12,5 × 1,6) entra y da un pelín más
+de apoyo. El acero no fluye con el tiempo y el PLA sí, así que si la tienes a
+mano, mejor esa.
+
+Son 12 unidades, 2 g en total.
 
 ## Orden de impresión
 
