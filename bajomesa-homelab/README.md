@@ -55,7 +55,20 @@ por su parte más ancha, la que apoya contra la madera:
 Si pasa de 13 mm no cabe por la bocallave; sube `d_cabeza` y el círculo crece solo.
 
 **Tornillos:** tablero de 20 mm → usa tornillos de **20 mm de largo total o menos**.
-Con 3,5 mm fuera quedan 16,5 dentro, que agarra de sobra y no asoma por arriba.
+
+**Arandela obligatoria bajo la cabeza.** Sin ella el labio de plástico que
+aguanta la cabeza del tornillo (Ø11) tiene solo 1,75 mm por lado — sujeta, pero
+si el tornillo tiene cabeza abombada o avellanada ese cono acaba abriendo la
+ranura con el uso. `arandela.scad` genera una carrocera Ø18×1,6 (DIN 9021 M6)
+comprobada contra el hueco real de la oreja. Mejor en metal si puedes: 12
+unidades, un par de euros en cualquier ferretería. La versión impresa
+(`stl/arandela.scad`) vale de parche si no tienes acceso a una ferretería
+ahora mismo.
+
+La arandela **no pasa por el círculo de entrada de la bocallave** (Ø13):
+móntala con el raíl ya colgado, no antes. Y con ella puesta deja
+**3,5 + 1,6 = 5,1 mm** de vástago fuera del tablero en vez de 3,5 — ajusta la
+profundidad de atornillado.
 
 ## Orden de impresión
 
