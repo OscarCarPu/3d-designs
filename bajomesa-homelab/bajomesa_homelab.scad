@@ -1,205 +1,113 @@
 // =====================================================================
-//  SOPORTE BAJO-MESA MODULAR  "HOMELAB"
-//  Mesa: IKEA MITTZON 140x80 ELEVABLE  (tablero aglomerado ~20 mm)
-//
-//  Aloja:  Lenovo ThinkCentre M920q  +  su fuente  +  conversor fibra
-//          +  router  +  ladron/regleta de 400 mm
-//
-//  ---------------------------------------------------------------
-//  ARQUITECTURA
-//
-//  (A) LA FILA: 2 RAILES paralelos atornillados al bajo del tablero
-//      con BOCALLAVES (los mismos tornillos que ya usaste en
-//      cajon-router). Perfil en T invertida: los MODULOS se deslizan
-//      por el canal desde un extremo y quedan colgados. Los bloquea
-//      una CUNA de friccion, sin tornilleria extra.
-//
-//      POR QUE DOS RAILES: reparten los ~4 kg y, sobre todo, matan el
-//      momento de palanca. Ningun modulo cuelga en voladizo de una
-//      sola linea de tornillos, que es el modo de fallo real del
-//      aglomerado de 20 mm.
-//
-//      Orden de la fila:  M920q | conversor | router
-//      El M920q va en el extremo a proposito: es lo que mas vas a
-//      tocar y desde ahi sale sin desmontar nada mas.
-//
-//  (B) EL LADRON: dos BRIDAS independientes atornilladas directamente
-//      al tablero, por detras del rail trasero. No tocan el sistema de
-//      railes: si compartiesen canal chocarian con las cabezas de los
-//      modulos. Van desacopladas a proposito.
-//
-//  ---------------------------------------------------------------
-//  TORNILLOS: 8 para los railes + 4 para el ladron = 12.
-//  Son 12 taladros ciegos en una cara que no se ve. El numero sale
-//  solo de N_SEG, que se calcula a partir del ancho de la fila.
-//
-//  ---------------------------------------------------------------
-//  TODO IMPRIME SIN SOPORTES.  Cama necesaria: 250 x 220.
-//    - RAILES:  tal cual. La placa superior es un puente de 30 mm.
-//    - MODULOS: tal cual. OJO: el eje Y del modelo (229 mm) va a lo
-//               largo del eje de 250 mm de tu cama; el eje X (<=193)
-//               a lo largo del de 220.
-//    - BRIDAS, CUNA y GALGA: tal cual.
-//
-//  MATERIAL: PLA vale. La tension maxima esta en las bocallaves del
-//  rail, ~5 N sobre unos 40 mm2 = 0.13 MPa, y en las cabezas en T baja
-//  a 0.003 MPa: tres ordenes de magnitud por debajo del limite del
-//  PLA, asi que la fluencia bajo carga permanente no es un problema
-//  real. PETG o ASA siguen siendo mejores si los tienes a mano.
-//
-//  Unidades: milimetros. Necesita la libreria BOSL2.
+//  SOPORTE BAJO-MESA MODULAR "HOMELAB"   (mesa IKEA MITTZON elevable)
+//  Marco de 2 railes + 2 travesanos atornillado bajo el tablero.
+//  Los modulos (router, conversor, M920q) cuelgan deslizando por el
+//  canal en T. El porque de cada decision esta en README.md.
+//  Milimetros. Necesita BOSL2.
 // =====================================================================
 
 include <BOSL2/std.scad>
 $fn = 48;
 
-/* =====================================================================
-   1. QUE PIEZA GENERAR
-   ===================================================================== */
+// --- 1. QUE PIEZA GENERAR --------------------------------------------
 pieza = "conjunto";
-//  "conjunto"  vista de montaje completa (NO imprimible)
-//  "testigo-rail"   \_ probeta de ajuste del canal, DOS piezas
-//  "testigo-cabeza" /  IMPRIME ESTO PRIMERO
-//  "rail"      1 segmento de rail        -> imprimir x4  (2 por rail)
-//  "cuna"      cuna de bloqueo           -> imprimir x4
-//  "galga"     galga de separacion       -> imprimir x2  (util de montaje)
-//  "m920q"     modulo del M920q          -> imprimir x1
-//  "aux"       modulo del conversor      -> imprimir x1
-//  "router"    modulo del router         -> imprimir x1
-//  "brida"     brida del ladron          -> imprimir x2
+//  "conjunto"       vista de montaje (NO imprimible)
+//  "testigo-rail"   \_ probeta del ajuste del canal: IMPRIME ESTO PRIMERO
+//  "testigo-cabeza" /
+//  "rail"       x4  (2 por rail)      "travesano"  x2
+//  "llave"      x1 (salen 6, hacen falta 4)
+//  "m920q" "aux" "router"  x1         "brida"      x2
 
-/* =====================================================================
-   2. APARATOS   <<<<<  MIDE LOS TUYOS Y AJUSTA  >>>>>
-   ===================================================================== */
-// Lenovo ThinkCentre M920q Tiny  (oficial: 179 x 183 x 37 con pies)
-pc_x = 179;  pc_y = 183;  pc_z = 37;
+// --- 2. APARATOS   <<<  MIDE LOS TUYOS  >>> --------------------------
+pc_x = 179;  pc_y = 183;  pc_z = 37;    // ThinkCentre M920q Tiny
+fuente_externa = false;                 // true = la fuente es un ladrillo aparte
+ps_x = 55;   ps_y = 125;  ps_z = 30;    // solo si fuente_externa
+c_x = 70;    c_y = 90;    c_z = 25;     // conversor de fibra
+r_x = 170;   r_y = 170;   r_z = 60;     // router
+la_x = 400;  la_y = 60;   la_z = 42;    // ladron
 
-// La fuente va integrada en el equipo, no como ladrillo externo.
-// Si en algun momento pasa a ser externa, pon esto a true y el modulo
-// auxiliar recupera su cubiculo (la fila crece 58 mm y puede pasar a
-// necesitar 3 segmentos de rail por lado en vez de 2).
-fuente_externa = false;
-ps_x = 55;   ps_y = 125;  ps_z = 30;   // solo se usa si fuente_externa
+// --- 3. TORNILLOS  (aglomerado comun 4 x 20, cabeza avellanada) ------
+// Se atornilla directo, sin bocallave: no hay que dejar el tornillo a
+// ninguna altura exacta y el agujero es del tamano del tornillo.
+d_vastago = 4;                     // cana lisa
+d_cabeza  = 8;                     // <-- VERIFICA CON CALIBRE
+hol_paso  = 0.5;
+d_paso  = d_vastago + hol_paso;    // 4.5  agujero de paso
+d_avell = d_cabeza  + hol_paso;    // 8.5  boca del avellanado
+d_hueco = 11;                      // acceso del destornillador
+h_avell = (d_avell - d_paso)/2;    // cono a 90 grados
+t_paso  = 5;                       // plastico que atraviesa: deja 15 mm en la madera
 
-// Conversor fibra/ethernet  (el mismo del diseno anterior)
-c_x = 70;   c_y = 90;   c_z = 25;
-
-// Router  (el mismo del diseno anterior)
-r_x = 170;  r_y = 170;  r_z = 60;
-
-// Ladron / regleta
-la_x = 400;  la_y = 60;   la_z = 42;
-
-/* =====================================================================
-   3. TORNILLOS  (los que ya usaste en el cajon-router)
-   ===================================================================== */
-//  d_cabeza es el diametro MAXIMO del sombrero del tornillo, medido
-//  atravesado por la parte mas ancha, la que apoya contra la madera:
-//
-//        |<-- d_cabeza -->|        <- mide AQUI, con el calibre
-//         \______________/            atravesado sobre el sombrero
-//              |    |
-//              |    |  <- d_vastago (la cana lisa, bajo la cabeza)
-//              |####|
-//              |####|  <- la rosca (no importa para el diseno)
-//
-//  Si tu cabeza pasa de 13 mm no cabe por la bocallave: sube
-//  d_cabeza y el circulo crece solo.
-d_vastago   = 6;
-d_cabeza    = 11;     // <-- VERIFICA CON CALIBRE
-hol_vastago = 1.5;
-hol_cabeza  = 2.0;
-desliz      = 16;     // recorrido de la bocallave
-
-// Cuanto hay que dejar SIN ROSCAR el tornillo en el tablero: la pieza
-// se cuelga en ese hueco. Es LA cota critica del montaje.
-//
-// Tablero de 20 mm: usa tornillos de 20 mm de largo TOTAL o menos.
-// Con 3.5 fuera quedan 16.5 dentro, que agarra de sobra y no asoma
-// por la cara de arriba.
-saliente_tornillo = 3.5;
-
-/* =====================================================================
-   4. HOLGURAS Y GROSORES
-   ===================================================================== */
-pared   = 3;      // paredes laterales de los modulos
-suelo   = 3;      // suelo de los modulos
+// --- 4. HOLGURAS Y GROSORES ------------------------------------------
+pared   = 3;
+suelo   = 3;
 hol     = 0.35;   // holgura de deslizamiento en el canal
 hol_dev = 5;      // holgura alrededor del router
 
-/* =====================================================================
-   5. PERFIL DEL RAIL  (T invertida)
-   ===================================================================== */
-R_plate = 4;      // placa superior (contra el tablero)
+// --- 5. PERFIL DEL RAIL  (T invertida) -------------------------------
+R_plate = 4;      // placa contra el tablero
 R_ch_h  = 8;      // alto interior del canal
 R_ch_w  = 30;     // ancho interior del canal
 R_open  = 18;     // apertura entre labios
-R_lip   = 3;      // espesor del labio
-R_wall  = 3;      // pared lateral del rail
+R_lip   = 3;
+R_wall  = 3;
 
-RW = R_ch_w + 2*R_wall;          // 36  ancho total del rail
-RH = R_lip + R_ch_h + R_plate;   // 15  alto total del rail
+RW = R_ch_w + 2*R_wall;          // 36
+RH = R_lip + R_ch_h + R_plate;   // 15
 
-R_ear   = 22;     // cuanto sobresale la oreja de la bocallave
-R_ear_l = 46;     // longitud de la oreja
-R_key   = 6;      // machihembrado de alineacion entre segmentos
+R_ear   = 17;     // vuelo de la pestana de atornillado
+R_ear_l = 20;
 R_MAX   = 245;    // maxima longitud imprimible de un segmento
 
-/* =====================================================================
-   6. GEOMETRIA COMUN DE LOS MODULOS
-   ===================================================================== */
-RAIL_SEP = 200;   // separacion entre ejes de los dos railes
-M_wall   = 6;     // grosor de las paredes que llevan la cabeza T
+// Alojamiento de la llave, excavado en el espesor de las paredes por
+// encima del labio: fuera del paso de la cabeza T y con el techo puesto
+// por la placa, asi que no hay nada que imprimir en el aire.
+R_key_l = 14;              // fondo en cada extremo
+R_key_y = 2;               // de los 3 mm de pared (deja 1 de piel)
+R_key_z = R_ch_h - 0.4;    // del labio a la placa
 
-hd_w   = R_ch_w - 2*hol;   // 29.30  ancho de la cabeza
-stem_w = R_open - 2*hol;   // 17.30  ancho del cuello
+// --- 6. GEOMETRIA COMUN DE LOS MODULOS -------------------------------
+RAIL_SEP = 200;   // entre ejes de los dos railes
+M_wall   = 6;     // paredes que llevan la cabeza T
 
-h_head  = 1.3;                    // parte recta de la cabeza
-h_cham  = (hd_w - stem_w)/2;      // 6.00  chaflan a 45 (imprimible)
-h_stem  = 4;                      // cuello recto
-h_flare = (stem_w - M_wall)/2;    // 5.65  transicion pared->cuello a 45
-h_trans = h_head + h_cham + h_stem + h_flare;   // 16.95
+hd_w   = R_ch_w - 2*hol;   // 29.30  cabeza
+stem_w = R_open - 2*hol;   // 17.30  cuello
 
-// El plano de enganche lo fija el aparato mas alto (el router)
-H_TOP  = suelo + r_z + 3 + h_trans;
-Z_MURO = H_TOP - h_trans;         // hasta donde suben las paredes
+h_head  = 1.3;
+h_cham  = (hd_w - stem_w)/2;      // 6.00  chaflan a 45, imprimible
+h_stem  = 4;
+h_flare = (stem_w - M_wall)/2;
+h_trans = h_head + h_cham + h_stem + h_flare;
+
+H_TOP  = suelo + r_z + 3 + h_trans;   // lo fija el aparato mas alto
+Z_MURO = H_TOP - h_trans;
 
 z_head_bot = H_TOP - h_head;
 z_cham_bot = z_head_bot - h_cham;
 z_stem_bot = z_cham_bot - h_stem;
 
-RAIL_Z0 = H_TOP + hol - (R_lip + R_ch_h);   // z del labio inferior
-TABLERO = RAIL_Z0 + RH;                     // cara inferior del tablero
+RAIL_Z0 = H_TOP + hol - (R_lip + R_ch_h);
+TABLERO = RAIL_Z0 + RH;
 
-// Anchos de cada modulo (eje X)
-W_m920q  = pc_x + 2*4       + 2*pared;              // 193
-W_aux    = fuente_externa ? ps_x + c_x + 2*2 + 3 + 2*pared   // 138
-                          : c_x + 2*2 + 2*pared;             //  80
-W_router = r_x  + 2*hol_dev + 2*pared;              // 186
+W_m920q  = pc_x + 2*4       + 2*pared;
+W_aux    = fuente_externa ? ps_x + c_x + 2*2 + 3 + 2*pared
+                          : c_x + 2*2 + 2*pared;
+W_router = r_x  + 2*hol_dev + 2*pared;
 W_TOTAL  = W_m920q + W_aux + W_router;
 
-// Railes: se trocean en el minimo numero de segmentos imprimibles
 L_RAIL = W_TOTAL + 12;
-N_SEG  = ceil(L_RAIL / (R_MAX - R_key));   // lo que se imprime es R_seg + R_key
+N_SEG  = ceil(L_RAIL / R_MAX);
 R_seg  = L_RAIL / N_SEG;
 
-// Hueco de canal libre en cada extremo de la fila, entre el final del
-// rail y el arranque de la cabeza T del modulo exterior. De aqui sale
-// el largo de la cuna: si se dimensiona a ojo no cabe, que es lo que
-// pasaba antes con una cuna de 45 mm en un hueco de 16.
-CUNA_HUECO = (L_RAIL - W_TOTAL)/2 + 10;
-CUNA_L     = CUNA_HUECO - 2;
+// Canal libre en cada boca: de aqui sale lo que se mete el tenon
+HUECO_BOCA = (L_RAIL - W_TOTAL)/2 + 10;
 
-// Y exterior de los modulos (comun a todos)
 Y0 = -M_wall/2;
 Y1 = RAIL_SEP + M_wall/2;
 
-/* =====================================================================
-   7. PRIMITIVAS
-   ===================================================================== */
+// --- 7. PRIMITIVAS ---------------------------------------------------
 
-// Cabeza en T que engancha en el canal. Centrada en y=0.
-// Sube desde Z_MURO hasta H_TOP con todas las transiciones a 45.
+// Cabeza en T de los modulos. Centrada en y=0, sube de Z_MURO a H_TOP.
 module cabeza_T(len) {
     hull() {
         translate([-len/2, -M_wall/2, Z_MURO])     cube([len, M_wall, 0.01]);
@@ -216,42 +124,29 @@ module cabeza_T(len) {
 
 module ranura_brida() { cube([12, 20, 3.5], center = true); }
 
-// Bocallave plana: la cabeza del tornillo entra por el circulo y el
-// vastago corre por la ranura. Para chapas de espesor <= saliente.
-module bocallave_2d() {
-    dh = d_cabeza  + hol_cabeza;    // 13.0
-    sw = d_vastago + hol_vastago;   //  7.5
-    union() { circle(d = dh); translate([0, -sw/2]) square([desliz, sw]); }
+// Taladro de una pestana de altura h (z=0 en su cara inferior): agujero
+// de paso arriba, avellanado en medio y hueco del destornillador debajo.
+module taladro(h) {
+    z0 = h - t_paso;
+    translate([0, 0, z0 - 0.01]) cylinder(h = t_paso + 0.11, d = d_paso);
+    translate([0, 0, z0 - 0.01]) cylinder(h = h_avell + 0.01,
+                                          d1 = d_avell, d2 = d_paso);
+    if (z0 > 0.02)
+        translate([0, 0, -0.1]) cylinder(h = z0 + 0.11, d = d_hueco);
 }
 
-/* =====================================================================
-   8. RAIL
-   ===================================================================== */
+// --- 8. RAIL ---------------------------------------------------------
 
-// En un bloque grueso hacen falta dos alturas: abajo el canal ancho
-// por donde corre la CABEZA, arriba la ranura estrecha del VASTAGO.
-module bocallave_cut() {
-    dh = d_cabeza + hol_cabeza;
-    translate([0, 0, -0.1])
-        linear_extrude(RH - saliente_tornillo + 0.1)
-            union() { circle(d = dh); translate([0, -dh/2]) square([desliz, dh]); }
-    translate([0, 0, RH - saliente_tornillo])
-        linear_extrude(saliente_tornillo + 0.1) bocallave_2d();
-}
+// Pestanas a 16 mm de cada punta y alternadas de lado: la union entre
+// segmentos queda pinzada entre dos tornillos separados 32 mm.
+function pestanas()    = [[16, +1], [R_seg - 16, -1]];
+function y_pestana(p)  = p[1] * (RW/2 + R_ear/2);
 
-// Orejas alternadas: impiden que el rail gire sobre su propio eje.
-function orejas() = [[42, +1], [R_seg - 42, -1]];
-
-// Seccion del rail. La usan el segmento real y la probeta, para que la
-// probeta no pueda quedarse desincronizada del perfil que va a la mesa.
 module perfil_rail(L) {
-    // labios
     translate([0,  R_open/2, 0]) cube([L, (RW - R_open)/2, R_lip]);
     translate([0, -RW/2,     0]) cube([L, (RW - R_open)/2, R_lip]);
-    // paredes laterales
     translate([0,  R_ch_w/2, R_lip]) cube([L, R_wall, R_ch_h]);
     translate([0, -RW/2,     R_lip]) cube([L, R_wall, R_ch_h]);
-    // placa superior (puente de 30 mm sobre el canal)
     translate([0, -RW/2, R_lip + R_ch_h]) cube([L, RW, R_plate]);
 }
 
@@ -259,57 +154,73 @@ module rail_seg(L = R_seg) {
     difference() {
         union() {
             perfil_rail(L);
-            // orejas de las bocallaves
-            for (o = orejas())
-                translate([o[0] - R_ear_l/2,
-                           o[1] > 0 ? RW/2 - 1 : -RW/2 - R_ear, 0])
+            for (p = pestanas())
+                translate([p[0] - R_ear_l/2,
+                           p[1] > 0 ? RW/2 - 1 : -RW/2 - R_ear, 0])
                     cube([R_ear_l, R_ear + 1, RH]);
-            // machihembrado macho (en los labios, apoyado en la cama)
-            for (s = [-1, 1])
-                translate([L, s*13.5 - 3, 0]) cube([R_key, 6, R_lip]);
         }
-        for (o = orejas())
-            translate([o[0] - desliz/2,
-                       o[1] > 0 ? RW/2 + R_ear/2 : -RW/2 - R_ear/2, 0])
-                bocallave_cut();
-        for (s = [-1, 1])
-            translate([-0.1, s*13.5 - 3.2, -0.1])
-                cube([R_key + 0.4, 6.4, R_lip + 0.2]);
+        for (p = pestanas())
+            translate([p[0], y_pestana(p), 0]) taladro(RH);
+        for (x = [-0.1, L - R_key_l])
+            for (s = [-1, 1])
+                translate([x, s > 0 ? R_ch_w/2 : -R_ch_w/2 - R_key_y,
+                           R_lip + 0.4])
+                    cube([R_key_l + 0.1, R_key_y, R_key_z + 0.1]);
     }
 }
 
-// Cuna de bloqueo: entra en el canal por el extremo de la fila, con el
-// extremo fino por delante, y se acuna en ALTURA contra los labios. Es
-// lo que impide que un modulo se salga deslizando por la boca del rail.
-//
-// El largo sale de CUNA_HUECO, no de un numero a ojo: en el canal solo
-// quedan libres los milimetros que sobran del rail mas los 10 mm de
-// retranqueo de la cabeza T. La pestana del testero es mas ancha que
-// el canal, asi que topa y no se puede pasar de rosca metiendola; y de
-// paso da donde agarrar y donde dar el golpe para sacarla.
-module cuna(L = CUNA_L) {
-    e0 = R_ch_h - 0.8;
-    e1 = R_ch_h + 0.6;
+// LLAVE: alinea los dos segmentos de un rail. Va suelta a proposito. El
+// saliente machihembrado que llevaba antes el propio rail era lo primero
+// que se partia; esto se imprime plano, es la orientacion mas fuerte, y
+// si se rompe una se reimprime en tres minutos. Vale igual un fleje de
+// acero o aluminio de 2 mm cortado a 27.
+LL_l = 2*R_key_l - 1;
+LL_y = R_key_y   - 0.2;
+LL_z = R_key_z   - 0.2;
+
+module llave() { cube([LL_l, LL_y, LL_z]); }
+
+// Tenon con el perfil de la cabeza T: entra por la boca del canal y ya
+// no puede salirse de lado. z=0 en la cara inferior del labio.
+module tenon(L) {
+    translate([0, -stem_w/2, 0]) cube([L, stem_w, R_lip]);
+    hull() {
+        translate([0, -stem_w/2, R_lip])          cube([L, stem_w, 0.01]);
+        translate([0, -hd_w/2,   R_lip + h_cham]) cube([L, hd_w,   0.01]);
+    }
+    translate([0, -hd_w/2, R_lip + h_cham])
+        cube([L, hd_w, R_ch_h - h_cham - hol]);
+}
+
+// TRAVESANO: barra por fuera de la boca de la fila, con un tenon en cada
+// punta. Fija los 200 mm entre railes (el marco se marca por sus propios
+// agujeros), tapa el canal haciendo de tope de los modulos y cierra el
+// conjunto a torsion. Se saca aflojando un tornillo.
+// La seccion es una L: alma alta contra el testero del rail y ala plana
+// hacia fuera. Con la misma materia que una barra plana da 18 mm de
+// apoyo en la cama y no se dobla de canto.
+TRV_x  = 6;                 // alma
+TRV_f  = 12;                // ala
+TRV_fz = 4;                 // espesor del ala
+TRV_t  = HUECO_BOCA - 2;    // lo que se mete el tenon
+TRV_b  = TRV_x + TRV_f;     // macizo del tornillo
+
+module travesano() {
     difference() {
         union() {
-            hull() {
-                translate([0, -hd_w/2, 0]) cube([0.01, hd_w, e0]);
-                translate([L, -hd_w/2, 0]) cube([0.01, hd_w, e1]);
-            }
-            translate([L, -(RW + 4)/2, 0]) cube([3, RW + 4, e1]);
+            translate([-TRV_x, -RW/2, 0]) cube([TRV_x, RAIL_SEP + RW, RH]);
+            translate([-TRV_b, -RW/2, 0])
+                cube([TRV_f, RAIL_SEP + RW, TRV_fz]);
+            translate([-TRV_b, RAIL_SEP/2 - TRV_b/2, 0])
+                cube([TRV_b, TRV_b, RH]);
+            for (y = [0, RAIL_SEP]) translate([0, y, 0]) tenon(TRV_t);
         }
-        translate([L + 3.1, 0, e1/2]) rotate([0, -90, 0]) cylinder(h = 12, d = 4);
+        translate([-TRV_b/2, RAIL_SEP/2, 0]) taladro(RH);
     }
 }
 
-// TESTIGO: 60 mm de rail + 60 mm de cabeza. IMPRIME ESTO PRIMERO.
-// Son dos piezas independientes, una en cada STL.
-// Cuestan 10 minutos y te dicen si el ajuste del canal es el correcto
-// ANTES de tirarte 20 horas de impresora en los seis segmentos.
-// Debe deslizar con la mano, sin holgura de traqueteo. Si va duro,
-// sube "hol"; si baila, bajalo. 0.05 mm cambia mucho.
-// Son DOS piezas sueltas, cada una en su STL: el canal abierto por los
-// dos extremos para poder probar el deslizamiento en ambos sentidos.
+// Probetas del ajuste del canal. Deben deslizar firme y sin traqueteo:
+// si va duro sube "hol", si baila bajalo. 0.05 mm cambia el tacto.
 module testigo_rail(L = 60) { perfil_rail(L); }
 
 module testigo_cabeza(L = 60) {
@@ -319,26 +230,9 @@ module testigo_cabeza(L = 60) {
     }
 }
 
-// Galga: mantiene los dos railes a la separacion exacta mientras
-// marcas y taladras. No queda en el montaje final.
-//  Trabaja a traccion/compresion pura (solo separa), no a flexion, asi
-//  que se puede vaciar sin miedo: es un util de un solo uso.
-module galga(A = 26) {
-    difference() {
-        translate([0, Y0, Z_MURO - 8]) cube([A, Y1 - Y0, 8]);
-        translate([(A - 14)/2, Y0 + 22, Z_MURO - 9])
-            cube([14, (Y1 - Y0) - 44, 10]);
-    }
-    translate([A/2, 0, 0])        cabeza_T(A);
-    translate([A/2, RAIL_SEP, 0]) cabeza_T(A);
-}
+// --- 9. MODULOS ------------------------------------------------------
 
-/* =====================================================================
-   9. MODULOS
-   ===================================================================== */
-
-// Esqueleto comun: suelo + 2 paredes laterales + 2 paredes colgantes
-// (trasera y delantera) rematadas en cabeza T.
+// suelo + 2 paredes laterales + 2 paredes colgantes rematadas en cabeza T
 module chasis(W, h_lat, vent = true) {
     hl = min(h_lat, Z_MURO);
     difference() {
@@ -358,17 +252,14 @@ module chasis(W, h_lat, vent = true) {
     }
 }
 
-// Ventana en una pared colgante: aire y paso de cables, dejando
-// columnas de 22 mm en los extremos, que es por donde baja la carga.
+// Aire y paso de cables, dejando 22 mm de columna en los extremos
 module ventana(W, y, z0, z1) {
     if (z1 > z0 + 1)
         translate([22, y - M_wall/2 - 1, z0])
             cube([W - 44, M_wall + 2, z1 - z0]);
 }
 
-// Topes que centran el aparato en Y contra las paredes colgantes.
-// Van aligerados con ventanas dejando 3 mm de piel en la cara que toca
-// el aparato: son separadores, no estructura. Macizos se comian 200 g.
+// Separador en Y, aligerado dejando 3 mm de piel contra el aparato
 module tope(W, y0, d, alto, piel_al_fondo) {
     difference() {
         translate([pared, y0, suelo]) cube([W - 2*pared, d, alto]);
@@ -390,7 +281,6 @@ module topes(W, dev_y, alto) {
     }
 }
 
-// Rejilla en los dos laterales, a la altura del aparato.
 module rejilla_lateral(W, y0, alto_z, n = 6) {
     if (alto_z > 2)
         for (s = [0, W - pared])
@@ -399,11 +289,8 @@ module rejilla_lateral(W, y0, alto_z, n = 6) {
                     cube([pared + 2, 16, alto_z]);
 }
 
-// --- MODULO M920q -----------------------------------------------------
-//  El M920q ventila por ARRIBA y expulsa por detras. Va boca arriba con
-//  la caja abierta hacia el tablero: le quedan ~47 mm de aire libre por
-//  encima, mas rejilla en los cuatro costados.
-puertos_al_frente = true;   // true = puertos hacia el frente de la mesa
+// El M920q va boca arriba, abierto hacia el tablero: ~47 mm de aire
+puertos_al_frente = true;
 
 module mod_m920q() {
     py0 = (RAIL_SEP - pc_y) / 2;
@@ -416,7 +303,6 @@ module mod_m920q() {
         ventana(W_m920q, 0,        suelo + 6, Z_MURO - 4);
         ventana(W_m920q, RAIL_SEP, suelo + 6, Z_MURO - 4);
         rejilla_lateral(W_m920q, py0, pc_z - 8);
-        // hueco amplio delante de los puertos
         translate([18, y_puertos - M_wall/2 - 1, suelo + 2])
             cube([W_m920q - 36, M_wall + 2, pc_z + 2]);
         for (y = [RAIL_SEP*0.3, RAIL_SEP*0.7])
@@ -425,25 +311,12 @@ module mod_m920q() {
     }
 }
 
-// --- MODULO AUXILIAR: CONVERSOR (+ fuente si fuese externa) -----------
-//  Con la fuente integrada en el equipo este modulo solo lleva el
-//  conversor y baja de 138 a 80 mm, lo que deja la fila en 459 mm y
-//  permite hacer cada rail con DOS segmentos en vez de tres: cuatro
-//  tornillos menos.
-//  Si algun dia la fuente pasa a ser externa, los dos cubiculos van
-//  LADO A LADO en X (en Y no caben: 125 + 90 > 194).
-x_ps  = pared;                            // cubiculo de la fuente
-x_cv  = fuente_externa ? x_ps + ps_x + 5 : pared;   // cubiculo del conversor
+x_ps = pared;
+x_cv = fuente_externa ? x_ps + ps_x + 5 : pared;
 
-//  DE AHI LOS DOS CUBICULOS: el conversor solo ocupa 90 de los 194 mm
-//  del vano. En vez de rellenar el resto con topes macizos, va PEGADO A
-//  LA PARED TRASERA y los 99 mm que quedan detras de su pared de
-//  retencion son camara ABIERTA A PROPOSITO, para el bucle de servicio
-//  de la fibra: con la mesa subiendo y bajando 60 cm el latiguillo
-//  necesita holgura en algun sitio, y ahi le caben ~37 mm de radio de
-//  curvatura, de sobra para un SC/APC.
-//  Sale mas ligero que macizarlo Y resuelve un problema real.
-y_cv_fin = M_wall/2 + c_y + 2;         // pared de retencion del conversor
+// El conversor va pegado a la pared trasera: los 99 mm que quedan
+// detras son camara abierta a proposito para el bucle de la fibra.
+y_cv_fin = M_wall/2 + c_y + 2;
 
 module mod_aux() {
     h_dev = fuente_externa ? max(ps_z, c_z) : c_z;
@@ -457,12 +330,11 @@ module mod_aux() {
                 tope(ps_x + 2*pared, M_wall/2,        y_ps - M_wall/2, h_dev, true);
                 tope(ps_x + 2*pared, RAIL_SEP - y_ps, y_ps - M_wall/2, h_dev, false);
             }
-            // pared de retencion del conversor + escuadras a 45
             translate([pared, y_cv_fin, suelo])
                 cube([W_aux - 2*pared, 3, h_dev]);
             for (x = [pared + 6, W_aux/2 - 4, W_aux - pared - 14])
                 hull() {
-                    translate([x, y_cv_fin + 3, suelo]) cube([8, 0.01, h_dev]);
+                    translate([x, y_cv_fin + 3,  suelo]) cube([8, 0.01, h_dev]);
                     translate([x, y_cv_fin + 15, suelo]) cube([8, 0.01, 3]);
                 }
         }
@@ -477,9 +349,6 @@ module mod_aux() {
     }
 }
 
-// --- MODULO ROUTER ----------------------------------------------------
-//  El router llena casi toda la altura util, asi que aqui las ventanas
-//  van a la altura del propio aparato, no por encima.
 module mod_router() {
     ry0 = (RAIL_SEP - r_y) / 2;
     difference() {
@@ -496,41 +365,28 @@ module mod_router() {
     }
 }
 
-/* =====================================================================
-   10. BRIDA DEL LADRON
-   ---------------------------------------------------------------------
-   Va atornillada DIRECTAMENTE al tablero, por detras del rail trasero,
-   con dos bocallaves propias. Deliberadamente desacoplada del sistema
-   de railes: si compartiese canal chocaria con las cabezas T de los
-   modulos, que ocupan practicamente toda su longitud.
-   Se imprime con la placa contra la cama; el cuenco crece hacia arriba
-   y los labios salen a 45, asi que no lleva soportes.
-   ===================================================================== */
-lb_x    = 120;                   // ancho de la brida
-lb_t    = saliente_tornillo;     // espesor de la placa (cota critica)
-lb_sep  = 70;                    // separacion entre sus dos tornillos
+// --- 10. BRIDA DEL LADRON  (va al tablero, desacoplada del marco) -----
+lb_x    = 120;
+lb_t    = t_paso;
+lb_sep  = 70;
 lb_wall = 3;
 lb_lip  = 3;
 
-// Eje del ladron. Tiene que quedar por detras de las orejas del rail
-// trasero (que llegan hasta y = -40), no solo por detras del rail.
-la_axis = -82;
+la_axis = -82;    // por detras de las pestanas del rail trasero (y = -35)
 lb_y0   = la_axis - la_y/2 - lb_wall - 4;
 lb_y1   = la_axis + la_y/2 + lb_wall + 4;
 
-z_cuenco = TABLERO - lb_t;               // techo del cuenco
-z_lad    = z_cuenco - la_z - 3;          // cara inferior de los labios
+z_cuenco = TABLERO - lb_t;
+z_lad    = z_cuenco - la_z - 3;
 
 module brida_ladron() {
-    yi = la_y/2 + 1;                     // cara interior de la pared
+    yi = la_y/2 + 1;
     difference() {
         union() {
-            // placa contra el tablero
             translate([-lb_x/2, lb_y0, z_cuenco]) cube([lb_x, lb_y1 - lb_y0, lb_t]);
-            // nervio perimetral para que la placa de 3.5 no flecte
-            translate([-lb_x/2, lb_y0, z_cuenco - 7]) cube([lb_x, 5, 7]);
+            // nervios para que la placa no flecte
+            translate([-lb_x/2, lb_y0,     z_cuenco - 7]) cube([lb_x, 5, 7]);
             translate([-lb_x/2, lb_y1 - 5, z_cuenco - 7]) cube([lb_x, 5, 7]);
-            // paredes del cuenco + labios a 45
             for (s = [-1, 1])
                 translate([-lb_x/2, la_axis + s*(yi + lb_wall/2), 0]) {
                     translate([0, -lb_wall/2, z_lad])
@@ -544,19 +400,14 @@ module brida_ladron() {
                     }
                 }
         }
-        // bocallaves
         for (dx = [-lb_sep/2, lb_sep/2])
-            translate([dx - desliz/2, la_axis, z_cuenco - 0.1])
-                linear_extrude(lb_t + 0.2) bocallave_2d();
-        // ranuras de brida por si tu ladron es mas fino de lo previsto
+            translate([dx, la_axis, z_cuenco]) taladro(lb_t);
         for (dx = [-lb_x/4, lb_x/4])
             translate([dx, la_axis, z_lad + 1.5]) rotate([0, 0, 90]) ranura_brida();
     }
 }
 
-/* =====================================================================
-   11. VISTA DE CONJUNTO
-   ===================================================================== */
+// --- 11. VISTA DE CONJUNTO -------------------------------------------
 X_M920Q  = 0;
 X_AUX    = W_m920q;
 X_ROUTER = W_m920q + W_aux;
@@ -565,19 +416,22 @@ module fantasma(x, y, z, dx, dy, dz, col) {
     color(col, 0.45) translate([x, y, z]) cube([dx, dy, dz]);
 }
 
-module conjunto() {
+module marco() {
     for (y = [0, RAIL_SEP])
         for (s = [0 : N_SEG - 1])
             translate([-6 + s*R_seg, y, RAIL_Z0]) rail_seg();
+    translate([-6, 0, RAIL_Z0]) travesano();
+    translate([L_RAIL - 6, 0, RAIL_Z0]) mirror([1, 0, 0]) travesano();
+}
 
+module conjunto() {
+    marco();
     translate([X_M920Q,  0, 0]) mod_m920q();
     translate([X_AUX,    0, 0]) mod_aux();
     translate([X_ROUTER, 0, 0]) mod_router();
-
     for (x = [W_TOTAL/2 - 130, W_TOTAL/2 + 130])
         translate([x, 0, 0]) brida_ladron();
 
-    // aparatos (fantasma)
     fantasma(X_M920Q + pared + 4, (RAIL_SEP - pc_y)/2, suelo,
              pc_x, pc_y, pc_z, "DarkRed");
     if (fuente_externa)
@@ -590,30 +444,28 @@ module conjunto() {
     fantasma(W_TOTAL/2 - la_x/2, la_axis - la_y/2, z_lad + lb_lip,
              la_x, la_y, la_z, "Goldenrod");
 
-    // tablero de la mesa (fantasma)
     color("Tan", 0.22)
         translate([-90, -170, TABLERO]) cube([W_TOTAL + 180, 560, 20]);
 }
 
-/* =====================================================================
-   12. SALIDA
-   ===================================================================== */
-if      (pieza == "conjunto") conjunto();
-else if (pieza == "rail")     rail_seg();
-else if (pieza == "cuna")     cuna();
+// --- 12. SALIDA ------------------------------------------------------
+if      (pieza == "conjunto")       conjunto();
+else if (pieza == "rail")           rail_seg();
+else if (pieza == "travesano")      rotate([0, 0, -90]) travesano();
+else if (pieza == "llave")          for (i = [0 : 5])
+                                        translate([0, i*(LL_z + 3), 0])
+                                            rotate([-90, 0, 0]) llave();
 else if (pieza == "testigo-rail")   testigo_rail();
 else if (pieza == "testigo-cabeza") testigo_cabeza();
-else if (pieza == "galga")    translate([0, 0, -Z_MURO + 8]) galga();
-else if (pieza == "m920q")    mod_m920q();
-else if (pieza == "aux")      mod_aux();
-else if (pieza == "router")   mod_router();
-// La brida sale girada: se imprime con la placa contra la cama, que es
-// la cara ancha, y el cuenco creciendo hacia arriba.
-else if (pieza == "brida")    translate([0, 0, TABLERO]) rotate([180, 0, 0]) brida_ladron();
+else if (pieza == "m920q")          mod_m920q();
+else if (pieza == "aux")            mod_aux();
+else if (pieza == "router")         mod_router();
+else if (pieza == "brida")          translate([0, 0, TABLERO])
+                                        rotate([180, 0, 0]) brida_ladron();
 
 echo(str("Caida total bajo el tablero .... ", TABLERO, " mm"));
 echo(str("Ancho total de la fila ......... ", W_TOTAL, " mm"));
 echo(str("Fondo ocupado bajo la mesa ..... ", RAIL_SEP + hd_w + (-lb_y0), " mm"));
 echo(str("Rail: ", N_SEG, " segmentos de ", R_seg, " mm por cada rail"));
-echo(str("Tornillos ...................... ", N_SEG*2*2, " railes + 4 ladron"));
+echo(str("Tornillos ...................... ", N_SEG*2*2, " railes + 2 travesanos + 4 ladron"));
 echo(str("Aire libre sobre el M920q ...... ", TABLERO - suelo - pc_z, " mm"));
