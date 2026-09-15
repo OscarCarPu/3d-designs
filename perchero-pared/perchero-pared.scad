@@ -12,23 +12,38 @@
 //  d_cabeza avellanado "prof_cabeza" mm en la cara frontal, para que la
 //  cabeza del tornillo quede hundida.
 //
-//  GANCHOS. Copian el gancho clasico de latón de perchero/sombrerera:
-//  cada puesto es un GANCHO DOBLE en la misma vertical, no dos niveles
-//  repartidos a lo largo del liston:
-//    - brazo largo: sale perpendicular a la pared, se levanta con dos
-//      arcos tangentes (cuello de cisne) y remata en bola. La curva es
-//      concava hacia la pared, asi que lo que se cuelga cae al fondo del
-//      hueco entre el brazo y el liston, no hacia la boca.
-//    - gancho pequeño: nace mas abajo, baja un poco y cierra hacia
-//      arriba; la bola de la punta hace de tope.
+//  GANCHOS. Copian el gancho clasico de latón de perchero/sombrerera.
+//  brazo largo y gancho pequeño van ALTERNADOS a lo largo del liston (los
+//  pequeños caen en el hueco entre dos brazos largos), no apilados dos en
+//  la misma vertical:
+//    - brazo largo (en brazo_x): sale perpendicular a la pared, se
+//      levanta con dos arcos tangentes (cuello de cisne) y remata en
+//      bola. La curva es concava hacia la pared, asi que lo que se
+//      cuelga cae al fondo del hueco entre el brazo y el liston, no
+//      hacia la boca.
+//    - gancho pequeño (en peq_x): nace mas abajo, baja un poco y cierra
+//      hacia arriba; la bola de la punta hace de tope.
 //  Los dos salen del mismo camino parametrico (recta + arcos tangentes,
 //  seccion circular que va afinando de la raiz a la punta), no hay tres
 //  formas distintas ni codos raros.
 //
 //  Diferencia a proposito con la foto: el brazo largo va mas tumbado que
-//  el de latón. Las piezas se imprimen con la cara de pared en la cama y
-//  los ganchos hacia arriba, asi que la inclinacion del brazo ES el
-//  angulo de voladizo; pasando de ~75 grados habria que meter soportes.
+//  el de latón.
+//
+//  ORIENTACION DE IMPRESION: la pieza se apoya en el CANTO INFERIOR del
+//  liston (cara Y=-grosor/2, la de la pared, queda VERTICAL), no tumbada
+//  sobre esa cara. Motivo: la raiz de cada gancho, embebida en el liston
+//  y perpendicular a la pared, es donde se concentra la flexion cuando
+//  cuelga peso, y esa tension es axial a la raiz (direccion "avance",
+//  perpendicular a la pared). Si esa direccion coincide con el eje Z de
+//  impresion (como pasaba tumbando la pieza), la tension tira justo entre
+//  capas, que es la union mas debil, y por eso se parte ahi. De pie, esa
+//  direccion queda dentro del plano de cada capa (horizontal) y la que
+//  sube en Z es la altura del liston, que no es donde se concentra el
+//  esfuerzo. Con esta orientacion la raiz de cada gancho sale como un
+//  saliente horizontal desde una pared vertical: necesita SOPORTES (ya
+//  van activados en los perfiles de impresion, tree(auto)) en el primer
+//  tramo de cada gancho, junto al liston.
 //
 //  GANCHO LATERAL. Uno por mitad, junto al extremo. Nace en la cara de
 //  DELANTE como los demas (misma raiz perpendicular a la pared, misma
@@ -65,22 +80,32 @@ prof_cabeza   = 6;     // profundidad del avellanado desde la cara frontal
 
 /* --------------------- LISTON ---------------------------------- */
 margen   = 30;   // de cada tornillo al extremo del liston
-alto     = 60;   // altura del liston: el gancho doble lo cruza entero
-grosor   = 15;   // espesor, de cara frontal a cara de pared
+alto     = 68;   // altura del liston: el gancho doble lo cruza entero
+                 // (subida junto con los ganchos, para que las raices
+                 // mas gordas sigan cabiendo con hueco de sobra)
+grosor   = 18;   // espesor, de cara frontal a cara de pared: mas grosor
+                 // da mas anclaje a la raiz de los ganchos y mas pared
+                 // solida alrededor del agujero de tornillo
 redondeo = 3;    // redondeo del canto exterior (la cara de union va a escuadra)
 
 /* --------------------- CAMA DE LA IMPRESORA -------------------- */
-cama = [250, 220];   // Core One+, lo que obliga a partir el perchero
+cama       = [250, 220];   // Core One+, lo que obliga a partir el perchero
+altura_max = 270;          // Z maximo de la Core One+
 
-/* --------------------- GANCHOS DOBLES -------------------------- */
-ganchos_x = [45, 135];   // puesto de cada gancho doble en la mitad,
-                         // medido desde la cara de union
+/* --------------------- GANCHOS: ALTERNADOS ---------------------- */
+// medidos desde la cara de union; los peq_x caen en el hueco entre
+// brazos, no debajo de uno: brazo - peq - brazo - peq
+brazo_x = [34, 110];
+peq_x   = [72, 148];
 
 // brazo largo (sombreros, perchas, asas de bolsa)
-brazo_z     = 8;     // altura de la raiz: en el tercio de arriba del liston
-brazo_raiz  = 7;     // cuanto se hunde la raiz en el liston
-brazo_d     = 16;    // diametro en la raiz
-brazo_d_fin = 9;     // diametro en la punta
+brazo_z     = 10;    // altura de la raiz: en el tercio de arriba del liston
+brazo_raiz  = 10;    // cuanto se hunde la raiz en el liston: mas hundida
+                     // reparte la flexion en mas distancia, menos pico
+                     // de tension justo donde el brazo sale del liston
+brazo_d     = 20;    // diametro en la raiz: la seccion que mas flexion
+                     // aguanta, engordada a proposito
+brazo_d_fin = 10;    // diametro en la punta
 brazo_bola  = 13;    // bola del remate
 brazo_r1    = 26;    // primer arco: despega de la perpendicular
 brazo_a1    = 50;
@@ -89,10 +114,10 @@ brazo_a2    = 25;
 brazo_recta = 8;     // tramo recto antes de la bola
 
 // gancho pequeño (abrigos, lazadas)
-peq_z     = -22;
-peq_raiz  = 7;
-peq_d     = 13;
-peq_d_fin = 8;
+peq_z     = -25;
+peq_raiz  = 9;
+peq_d     = 16;
+peq_d_fin = 9;
 peq_bola  = 11;
 peq_r1    = 10;      // baja al salir del liston
 peq_a1    = -30;
@@ -103,11 +128,11 @@ peq_recta = 0;
 // gancho lateral: nace en la cara de delante, con el plano girado hacia
 // el extremo para acabar sobresaliendo por el canto
 lat_giro   = 55;     // 0 = como los de delante, 90 = plano tumbado del todo
-lat_margen = 11;     // del extremo del liston a la raiz
+lat_margen = 13;     // del extremo del liston a la raiz
 lat_z      = -10;
-lat_raiz   = 7;
-lat_d      = 15;     // el mas gordo: es el que tiene que aguantar peso
-lat_d_fin  = 9;
+lat_raiz   = 10;
+lat_d      = 19;     // el mas gordo: es el que tiene que aguantar peso
+lat_d_fin  = 10;
 lat_bola   = 13;
 lat_r1     = 12;     // baja al salir del liston
 lat_a1     = -30;
@@ -116,11 +141,15 @@ lat_a2     = 150;
 lat_recta  = 0;
 
 /* --------------------- UNION CENTRAL (cola de milano) ------------ */
-cm_cuello = 5;    // ancho de la cola junto a la cara de union
-cm_base   = 9;    // ancho en el fondo (lo que no sale tirando)
-cm_prof   = 6;    // profundidad hacia dentro de la pieza
-cm_alto   = 28;   // tramo por el que desliza (abierto por arriba)
-cm_holg   = 0.3;  // holgura por lado en la caja
+// mas cm_prof (engancha mas hacia dentro) + mas cm_alto (desliza mas
+// altura) + menos cm_holg (ajuste mas prieto) dejan las dos mitades mas
+// firmes entre si antes de soldarlas con acetona: menos bailoteo al
+// pegar y mas superficie de contacto para que agarre la soldadura
+cm_cuello = 5;     // ancho de la cola junto a la cara de union
+cm_base   = 9;     // ancho en el fondo (lo que no sale tirando)
+cm_prof   = 8;     // profundidad hacia dentro de la pieza
+cm_alto   = 40;    // tramo por el que desliza (abierto por arriba)
+cm_holg   = 0.15;  // holgura por lado en la caja: ajuste prieto
 
 /* --------------------- PROBETA DEL AGUJERO ----------------------- */
 prueba_ancho  = 18;   // celda del agujero normal
@@ -161,16 +190,6 @@ function camino_lat()   = camino(lat_raiz, lat_r1, lat_a1,
 // escalon) y el resto del brazo esbelto
 function d_tubo(d0, d1, t) = d1 + (d0 - d1) * pow(1 - t, 1.4);
 
-// el camino con su altura y su radio en cada punto (la bola al final),
-// para medir huecos entre un gancho y otro
-function ptos(cam, z0, d0, d1, d_bola) =
-    let (n = len(cam) - 1)
-    [for (i = [0:n]) [cam[i] + [0, z0],
-                      (i == n ? d_bola : d_tubo(d0, d1, i/n)) / 2]];
-
-function hueco(a, b) =
-    min([for (p = a) for (q = b) norm(p[0] - q[0]) - p[1] - q[1]]);
-
 // bulto de un gancho ya colocado, para cuadrar la pieza con la cama:
 // [lo que vuela desde la cara frontal, lo que se va al lado, techo, suelo].
 // El giro del plano reparte la "subida" del camino entre lado y altura.
@@ -196,28 +215,36 @@ lat_bulto   = bulto(camino_lat(), lat_d, lat_d_fin, lat_bola, lat_z, lat_giro);
 // hasta donde llega el gancho lateral pasado el canto del liston
 lat_saliente = lat_x + lat_bulto[1] - largo_medio;
 
-// lo que ocupa una mitad en la cama (se imprime tumbada, asi que el alto
-// del liston y lo que sobresalen los ganchos por arriba y por abajo van
-// en el ANCHO de la huella, y el vuelo de los brazos en la altura)
+// la pieza se imprime de pie, apoyada en el canto inferior del liston
+// (Y = -grosor/2 queda vertical): en la CAMA entra el largo del liston
+// (X) y el grosor mas lo que vuelan los ganchos hacia fuera (Y); lo que
+// sube en Z es la altura del liston mas lo que suben o bajan los ganchos
 huella = [max(largo_medio, lat_x + lat_bulto[1]) + cm_prof,
-          max(alto/2, brazo_bulto[2], peq_bulto[2], lat_bulto[2])
-          - min(-alto/2, brazo_bulto[3], peq_bulto[3], lat_bulto[3])];
+          grosor + max(brazo_bulto[0], peq_bulto[0], lat_bulto[0])];
 
-// hueco libre entre el brazo largo y el gancho pequeño del mismo puesto:
-// por ahi entra la lazada del abrigo, asi que si el brazo se tumba sobre
-// el pequeño la boca se cierra y el pequeño no sirve para nada
-boca = hueco(ptos(camino_brazo(), brazo_z, brazo_d, brazo_d_fin, brazo_bola),
-             ptos(camino_peq(), peq_z, peq_d, peq_d_fin, peq_bola));
+altura_impresion = max(alto/2, brazo_bulto[2], peq_bulto[2], lat_bulto[2])
+                  - min(-alto/2, brazo_bulto[3], peq_bulto[3], lat_bulto[3]);
+
+// separacion libre entre cada par de ganchos (brazo o pequeño), midiendo
+// de superficie a superficie en X: como ya no comparten vertical, lo que
+// importa es que no se toquen ni se apiñen entre si
+ganchos_planos = concat([for (x = brazo_x) [x, brazo_d]],
+                        [for (x = peq_x) [x, peq_d]]);
+separacion_min = min([for (i = [0:len(ganchos_planos)-2], j = [i+1:len(ganchos_planos)-1])
+                      abs(ganchos_planos[i][0] - ganchos_planos[j][0])
+                      - (ganchos_planos[i][1] + ganchos_planos[j][1])/2]);
 
 echo(str("Perchero: ", largo, " x ", alto, " x ", grosor, " mm en 2 mitades"));
-echo(str("Ganchos dobles por mitad a ", ganchos_x, " mm de la union",
+echo(str("Ganchos alternados por mitad: brazo largo en ", brazo_x,
+         ", pequeño en ", peq_x, " mm de la union",
          " + 1 gancho lateral con la raiz a ", lat_margen,
          " mm del canto, que se sale ", lat_saliente, " mm por el lado"));
 echo(str("Vuelo: brazo largo ", brazo_bulto[0] + grosor,
          " mm desde la pared (punta a ", brazo_bulto[2],
          " mm del centro), gancho lateral ", lat_bulto[0] + grosor, " mm"));
-echo(str("Boca entre el brazo largo y el gancho pequeño: ", boca, " mm"));
-echo(str("Huella al imprimir: ", huella, " mm sobre cama de ", cama, " mm"));
+echo(str("Separacion minima entre ganchos vecinos: ", separacion_min, " mm"));
+echo(str("Huella al imprimir: ", huella, " mm sobre cama de ", cama,
+         " mm, ", altura_impresion, " mm de alto (maximo ", altura_max, " mm)"));
 
 // =====================================================================
 //  COMPROBACIONES
@@ -229,14 +256,18 @@ assert(cm_base < grosor - 4, "cm_base no deja pared suficiente dentro de grosor"
 assert(cm_alto < alto, "cm_alto no puede ser mayor que alto");
 assert(huella.x <= cama.x - 8 && huella.y <= cama.y - 8,
        "una mitad no cabe en la cama: baja margen o acorta el gancho lateral");
-assert(min([for (gx = ganchos_x) largo_medio - margen - gx]) > 30,
-       "un gancho doble se acerca demasiado al agujero de tornillo");
-assert(min(ganchos_x) > cm_prof + brazo_d,
-       "un gancho doble pisa la cola de milano");
-assert(brazo_a1 + brazo_a2 <= 75,
-       "el brazo largo queda tan vertical que al imprimirlo pide soportes");
-assert(boca >= 10,
-       "el brazo largo cierra la boca del gancho pequeño: sube brazo_z o baja peq_z");
+assert(altura_impresion <= altura_max - 5,
+       "de pie, la pieza no entra en la altura Z de la impresora");
+assert(min([brazo_bulto[3], peq_bulto[3], lat_bulto[3]]) >= -alto/2,
+       "algun gancho baja mas que el canto inferior del liston: el apoyo en la cama dejaria de ser plano");
+assert(min([for (gx = concat(brazo_x, peq_x)) largo_medio - margen - gx]) > 30,
+       "un gancho se acerca demasiado al agujero de tornillo");
+assert(min(brazo_x) > cm_prof + brazo_d,
+       "un brazo largo pisa la cola de milano");
+assert(min(peq_x) > cm_prof + peq_d,
+       "un gancho pequeño pisa la cola de milano");
+assert(separacion_min >= 8,
+       "dos ganchos vecinos (brazo o pequeño) quedan demasiado juntos: separa mas brazo_x/peq_x");
 assert(lat_saliente >= 8,
        "el gancho lateral no llega a sobresalir por el canto: sube lat_giro o baja lat_margen");
 assert(lat_margen >= lat_d/2 + 2,
@@ -273,10 +304,12 @@ module tubo(cam, d0, d1, d_bola) {
     translate([0, cam[n].x, cam[n].y]) sphere(d = d_bola, $fn = 48);
 }
 
-// gancho doble: brazo largo + gancho pequeño en la misma vertical
-module gancho_doble(x) {
+module gancho_brazo(x) {
     translate([x, grosor/2, brazo_z])
         tubo(camino_brazo(), brazo_d, brazo_d_fin, brazo_bola);
+}
+
+module gancho_peq(x) {
     translate([x, grosor/2, peq_z])
         tubo(camino_peq(), peq_d, peq_d_fin, peq_bola);
 }
@@ -326,7 +359,8 @@ module mitad(union_central) {   // union_central = "hueco" | "macho"
         union() {
             translate([largo_medio/2, 0, 0])
                 cuboid([largo_medio, grosor, alto], rounding = redondeo, edges = RIGHT);
-            for (gx = ganchos_x) gancho_doble(gx);
+            for (x = brazo_x) gancho_brazo(x);
+            for (x = peq_x) gancho_peq(x);
             gancho_lateral();
             if (union_central == "macho") cola_macho();
         }
@@ -347,11 +381,12 @@ module prueba() {
 }
 
 // =====================================================================
-//  ORIENTACION DE IMPRESION: tumba la pieza para que la cara trasera
-//  (Y = -grosor/2) apoye en la cama y los ganchos apunten hacia arriba.
+//  ORIENTACION DE IMPRESION: la pieza ya nace de pie (cara de pared
+//  vertical, ganchos saliendo de costado); solo hay que levantarla para
+//  que su canto inferior (Z = -alto_pieza/2) apoye en la cama.
 // =====================================================================
-module para_imprimir() {
-    rotate([90, 0, 0]) translate([0, grosor/2, 0]) children();
+module para_imprimir(alto_pieza) {
+    translate([0, 0, alto_pieza/2]) children();
 }
 
 // =====================================================================
@@ -361,9 +396,9 @@ module para_imprimir() {
 //  con la union en su x=0 y el tornillo hacia +x, asi que la mitad
 //  "izquierda" se refleja.
 // =====================================================================
-if (pieza == "izquierda") para_imprimir() mirror([1, 0, 0]) mitad("hueco");
-else if (pieza == "derecha") para_imprimir() mitad("macho");
-else if (pieza == "prueba") para_imprimir() prueba();
+if (pieza == "izquierda") para_imprimir(alto) mirror([1, 0, 0]) mitad("hueco");
+else if (pieza == "derecha") para_imprimir(alto) mitad("macho");
+else if (pieza == "prueba") para_imprimir(prueba_ancho) prueba();
 else if (pieza == "vista")
     union() {
         mirror([1, 0, 0]) mitad("hueco");
