@@ -62,7 +62,7 @@ tube_wall = 1.6;
 tube_len  = 20;   // cuanto se hunde el tubo en el cuerpo
 
 // --- 4. TAPON del agujero (sella entre caladas) -----------------------
-plug_clr = 0.3;   // holgura para que entre y salga sin forzar
+plug_clr = 0.6;   // holgura para que entre y salga sin forzar
 plug_h   = 8;     // cuanto se mete por el agujero
 head_lip = 3;     // cuanto sobresale la cabeza del hueco: apoya en el plato
 head_h   = 2;
