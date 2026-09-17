@@ -16,7 +16,7 @@
 //
 //  Por que el tubo es largo: el aire caliente y oloroso de la camara
 //  sube y queda atrapado bajo la tapa, mientras que su unica salida (la
-//  boca del tubo) esta 20 mm mas abajo. Es un sifon al reves, sin agua.
+//  boca del tubo) esta 16 mm mas abajo. Es un sifon al reves, sin agua.
 //
 //  La tapa esta modelada en posicion de impresion: el tubo bajante
 //  queda abajo (pared vertical delgada, sin voladizos) y el disco con
@@ -40,7 +40,7 @@ floor_h   = 3;
 body_cham = 0.8;  // chaflan anti "pata de elefante"
 
 // --- 2. Encaje tapa/cuerpo: la tapa hace de capuchon por fuera -------
-fit_clr    = 0.3; // holgura diametral del faldon sobre el cuerpo
+fit_clr    = 0.5; // holgura diametral del faldon sobre el cuerpo
 skirt_wall = 2.0;
 skirt_h    = 10;  // cuanto abraza el faldon la pared exterior del cuerpo
 
@@ -59,7 +59,7 @@ notch_depth = 3.5;  // hondo del canal, medido desde la cara superior
 // entre el plato y la camara de abajo.
 hole_d    = 19;   // deja pasar una colilla incluso de lado
 tube_wall = 1.6;
-tube_len  = 20;   // cuanto se hunde el tubo en el cuerpo
+tube_len  = 16;   // cuanto se hunde el tubo en el cuerpo
 
 // --- 4. TAPON del agujero (sella entre caladas) -----------------------
 plug_clr = 0.6;   // holgura para que entre y salga sin forzar
