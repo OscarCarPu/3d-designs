@@ -84,7 +84,7 @@ redondeo = 3;    // redondeo del canto exterior (la cara de union va a escuadra)
 cama = [250, 220];   // Core One+, lo que obliga a partir el perchero
 
 /* --------------------- GANCHOS: COMUN --------------------------- */
-g_holg  = 0.2;   // holgura por lado entre vastago y ranura
+g_holg  = 0.1;   // holgura por lado entre vastago y ranura (0.2 bailaba un poco)
 g_canto = 2;     // redondeo de los cantos del gancho
 g_pared = 0.3;   // la cola del vastago se queda corta de la pared: apoya
                  // el liston, no los ganchos
