@@ -38,8 +38,9 @@
 //  se lee como parte del trazo y se nota el remiendo — con la union a ras, la
 //  'F' parecia dos piezas y las uniones entre letras se veian como barritas a la
 //  altura de la letra. A cambio, lo que cuelga (una tilde) queda aguantado por
-//  0,9 mm de espesor; si alguna se ve fragil, sube 'union_z' a 1,5-2 mm, que
-//  sigue estando hundido.
+//  0,9 mm de espesor, y eso se rompe. Por eso las de lo que cuelga llevan un
+//  4o campo con su propia altura (2,4 mm en las dos palabras): sigue hundida
+//  1,6 mm por detras de la cara y aguanta. 'union_z' sube todas a la vez.
 //
 //  LA REGLA: la union va SIEMPRE en el hueco ENTRE dos letras, en el punto
 //  donde mas cerca estan una de otra, y nunca por encima de una letra ni
@@ -53,7 +54,7 @@
 //  recortado a un disco pequeno: rellena el pico donde los dos trazos se
 //  acercan y sale un filete en punta que se funde con los dos, como se ve la
 //  tinta de verdad.
-//      remache = [[x,y], zona, r]
+//      remache = [[x,y], zona, r]          (o [[x,y], zona, r, altura])
 //      'zona' es el radio del disco donde actua, 3.2 va bien; si lo aprietas,
 //      el disco corta el filete a media merma y deja un canto recto que se ve.
 //      'r' es el radio del cierre y tiene que pasar de la mitad del hueco. No
@@ -63,7 +64,7 @@
 //
 //  La PINCELADA es un trazo recto de ancho constante, solo para cuando el hueco
 //  es demasiado grande para un filete:
-//      pincelada = [[x0,y0], [x1,y1], grosor]
+//      pincelada = [[x0,y0], [x1,y1], grosor]   (o [..., grosor, altura])
 //      Que solape ~0,3 mm dentro de cada letra; tocarse de canto no vale.
 //      Grosor 1,0-1,4 mm: por debajo de 1,0 no llega ni a tres lineas de
 //      extrusion (0,4 mm) y se rompe al despegar la pieza de la cama.
@@ -79,7 +80,7 @@
 //
 //  2. Elige 'alto'. Ojo: es el cuerpo de la fuente, no el alto de la palabra, y
 //     cada fuente necesita uno distinto para la misma anchura. Medidas ya
-//     probadas (la aguja son 8,5 cm mas, desde la linea base):
+//     probadas (la aguja son 6 cm mas, desde la linea base):
 //         Allura   ["Parabéns"]         alto 24.5 -> palabra 110 x 40 mm
 //         Allura   ["Felices 15"]       alto 22.4 -> palabra 105 x 38 mm
 //         Allura   ["Feliz cumpleaños"] alto 16.6 -> palabra 134 x 33 mm
@@ -136,6 +137,7 @@ use <fonts/GreatVibes-Regular.ttf>
 // Tesela adaptativa: curvas finas donde hacen falta. Con $fn fijo la cursiva
 // sale facetada y se ven kinks en los trazos.
 $fn = 0; $fs = 0.4; $fa = 8;
+$estirar = 1;
 
 // ----------------------------------------------------------------------------
 //  lineas        una entrada por linea de texto
@@ -153,13 +155,15 @@ $fn = 0; $fs = 0.4; $fa = 8;
 //  base          placa fina por detras: es la que da la resistencia
 //  interlineado  separacion entre lineas, fraccion de 'alto'; va bajo a
 //                proposito, asi las lineas se enganchan entre ellas
+//  estirar       alarga la letra solo en vertical: 1.1 = 10 % mas alta con el
+//                mismo ancho. Las coordenadas de las uniones van ya estiradas
 //  union_z       altura de las uniones. 0 = automatico: los 0,9 mm de la placa,
 //                o los 4 mm si no hay placa. Ver "VAN HUNDIDAS"
 //  cierre        suelda letras deformandolas; solo para el look sin barra ni
 //                base (prueba 0.9 con Great Vibes y alto 35)
 //  aguja_ancho   4,5 mm: con 0,4 de linea y los 6 loops del perfil sale toda
 //                de perimetro, y con 4 mm de grosor no flexa al clavarla
-//  aguja_largo   8,5 cm desde la linea base del texto
+//  aguja_largo   6 cm desde la linea base del texto
 //  vista         "3d"        la pieza, lo que se exporta a STL
 //                "2d"        huella de la placa con las uniones, que es lo que
 //                            decide si algo se cae -> tools/piezas.py
@@ -173,12 +177,14 @@ $fn = 0; $fs = 0.4; $fa = 8;
 module topper(lineas, alto, fuente = "Allura", remaches = [], pinceladas = [],
               barra = true, base = true, interlineado = 0.62,
               grosor = 4.0, base_z = 0.9, union_z = 0, cierre = 0,
-              aguja_ancho = 4.5, aguja_largo = 85, vista = "3d") {
+              estirar = 1,
+              aguja_ancho = 4.5, aguja_largo = 60, vista = "3d") {
 
     // Las uniones van HUNDIDAS: solo en la placa de detras, no en los 4 mm de
     // la letra. Asi desde delante se ve la letra y nada mas. Si suben a los 4
     // mm se leen como parte del trazo y se nota el remiendo.
     z_union = union_z > 0 ? union_z : (base ? base_z : grosor);
+    $estirar = estirar;
 
     // Engorde minimo: la placa de detras es la que da resistencia, asi que al
     // trazo solo se le pide no bajar de ~0.6 mm. Engordar mas aplasta el
@@ -195,8 +201,15 @@ module topper(lineas, alto, fuente = "Allura", remaches = [], pinceladas = [],
             _capa(lineas, alto, fuente, barra, interlineado, cierre,
                   aguja_ancho, aguja_largo, 0);
         linear_extrude(z_union)
-            _uniones(remaches, pinceladas, lineas, alto, fuente, interlineado,
-                     cierre);
+            _uniones([for (m = remaches) if (len(m) < 4) m],
+                     [for (p = pinceladas) if (len(p) < 4) p],
+                     lineas, alto, fuente, interlineado, cierre);
+        // Las que llevan altura propia (4o campo): lo que cuelga, mas grueso.
+        for (m = remaches) if (len(m) > 3)
+            linear_extrude(m[3])
+                _remaches([m], lineas, alto, fuente, interlineado, cierre);
+        for (p = pinceladas) if (len(p) > 3)
+            linear_extrude(p[3]) _pinceladas([p]);
 
     } else if (vista == "2d") {
         // Huella de la placa de detras, uniones incluidas: es la que dice si
@@ -248,7 +261,7 @@ module _letra_linea(linea, alto, fuente, engorde, cierre) {
 }
 
 module _trazo(linea, alto, fuente, engorde) {
-    offset(r = engorde)
+    offset(r = engorde) scale([1, $estirar])
         text(linea, size = alto, font = fuente,
              halign = "center", valign = "baseline");
 }
